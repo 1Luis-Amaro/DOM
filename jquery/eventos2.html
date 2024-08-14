@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Eventos #02</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+    <script src='js/jquery.js'></script>
+    <style>
+        input {
+            font-size: 2em;
+        }
+    </style>
+</head>
+
+<body class='conteudo exercicio'>
+    <h1>Eventos #02</h1>
+    <div id='div1'>1</div>
+    <div id="resultado1">?</div>
+    <br>
+    <input type="text" placeholder="Digite e Selecione">
+    <div id="resultado2">?</div>
+    <script>
+        const alternarDestaque = () => $('#div1').toggleClass('destaque') //se tiver destaque tira, se não tiver coloca
+        // $('#div1').on('mouseenter mouseleave', alternarDestaque) // mesma coisa do de baixo mas utilizando o on
+        $('#div1').hover(alternarDestaque, alternarDestaque) //o hover quanndo eu passo por cima de onde eu apliquei, ele vai fazer aparecer algo, nesse caso o destaque que coloquei, e se na hora de sair eu quero que apareca algo tambem coloco um segundo parametro
+        
+        $('#div1').one('mouseenter', e => alert('Aviso IMPORTANTE: obrigado'))//on dispara um callback uma unica vez quando entrar na div vai chamar um alert
+        $('#div1').dblclick(e => $('#div1').fadeOut(1000).fadeIn(1000))//quando eu dar um double clicl na div1 o fadeOut vai fazer desaparecer por 1 segundo e o fadeIn vai fazer voltar
+   
+        $(window).resize(function(e){ //window é um evento de quando eu redimensiono a tela  
+            const l = $(window).width()
+            const a = $(window).height()
+            $('#resultado1').html(`largura: ${l} e altura ${a}`)    
+        })
+        
+        $(':input').select(e => {  //caso eu selecione um texto ele vai aparecer so a parte que eu selecionei
+            const inicio = e.target.selectionStart
+            const fim = e.target.selectionEnd
+            $('#resultado2').html(e.target.value.substring(inicio, fim))
+        })
+   </script>
+</body>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Eventos #03</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+    <script src='js/jquery.js'></script>
+    <style>
+        input {
+            font-size: 2em;
+        }
+
+        #resultado {
+            display: flex;
+            flex-direction: row;
+        }
+    </style>
+</head>
+
+<body class='conteudo exercicio'>
+    <h1>Eventos #03</h1>
+    <div id='div1'>1</div>
+    <div id='div2'>2</div>
+    <input id='input1' type='text' placeholder='Digite Algo!'>
+    <span id='resultado'></span>
+
+    <script>
+        function exibibirDadosEvento(e){
+            //emptylimpa o resultado ele zera tudo
+            //target mostra qual foi o elemento que disparou o evento
+            $('#resultado').empty()
+            const div1 = $('<div>')
+            const div2 = $('<div>')
+
+            $('#resultado').append(div1, div2)
+            div1.append(`target: ${e.target.id}`)
+
+            //relateTarget mostra um outro elemento que esteja relacionado com o envento
+            const rt = e.relatedTarget ? e.relatedTarget.tagName : null
+            div1.append(`<br>relatedTarget: ${rt}`)
+
+            div1.append(`<br>type: ${e.type}`)//o type ele vai me mostrar qual é o tipo do evento que aconteceu é muito importante
+            div1.append(`<br>which: ${e.which}`)    // o which mostra qual botao está pressionado do mouse ou o numero da tecla que você clicou do teclado
+            div1.append(`<br>metaKey: ${e.metaKey}`) //mostra se está selecionado o botao do windows
+            
+
+            div2.append(`pageX: ${e.pageX}`)
+            div2.append(`<br>pageY: ${e.pageY}`)
+            div2.append(`<br>clientX: ${e.clientX}`)
+            div2.append(`<br>clientY: ${e.clientY}`)
+
+            const obs = e.data ? e.data.obs : null
+            div2.append(`<br>obs: ${obs}`)
+        }
+
+        $('#div1, #div2').on('mouseenter mouseleave', exibibirDadosEvento) //quando eu entro na div é o mouseenter e quando saio é o leave e a partir disso chamo a funcao "exibirEvento"
+        $('input').keyup(exibibirDadosEvento)//no meu input quando digito algo vai chamar a funcao exibir dadosEvento
+
+
+
+    </script>
+</body>

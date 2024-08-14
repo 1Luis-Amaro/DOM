@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Animação #01</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+    <script src='js/jquery.js'></script>
+    <style>
+        div {
+            text-align: center;
+        }
+        button {
+            font-size: 1.8em;
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body class='conteudo exercicio'>
+    <h1>Animação #01</h1>
+    <button>Iniciar</button>
+    <div id='animar'>Animar!</div>
+
+    <script>        
+        $('button').click(e => {
+            const t = 450
+            //$('#animar').hide(t).show(t) //toda vez que eu clicar no botao meu id animar no caso minha div ira sumir e depois aparecer de novo
+            //$('#animar').toggle(t).toggle(t)//mesa coisa que o de cima mas usando o toglle
+            // $('#animar').fadeOut(t).fadeIn(t) //faz desaparecer e o fadeIn faz aparecer
+            //$('#animar').fadeToglle(t).fadeToglle(t)// mesma coisa que o fade normal mas usando toggle
+            //$('#animar').slideUp(t).slideDown(t)//slideUp faz o botao sumir de baixo para cima, slideDown vai aparecer
+            $('#animar').slideToggle(t).slideToggle(t)//mesma coisa do decima mas usando o toggle junto então se tiver aparecendo ele desaparece debaixo para cima e se não tiver aparece debaixo para cima
+            
+        
+        
+        })
+    </script>
+</body>
