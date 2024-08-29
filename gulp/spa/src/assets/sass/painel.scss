@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .painel {
     // flex-grow: 1;
     padding: 20px;
@@ -8,4 +9,16 @@
 .painel h2 {
     font-weight: 400;
     margin-top: 10px; 
+=======
+.painel {
+    // flex-grow: 1;
+    padding: 20px;
+    background-color: #FFF;
+    box-shadow: 0 9px 23px rgba(0, 0, 0, 0.09), 0 5px 5px rgba(0, 0, 0, 0.06);
+}
+
+.painel h2 {
+    font-weight: 400;
+    margin-top: 10px; 
+>>>>>>> ec2fe0ed0a0234e021dd53c74b9bd62ec07f1f0f
 }
