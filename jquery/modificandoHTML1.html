@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Modificando HTML #01</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+    <script src='js/jquery.js'></script>
+</head>
+
+<body class='conteudo exercicio'>
+    <h1>Modificando HTML #01</h1>
+    <div id='conteudo1'></div>
+    <div id='conteudo2'></div>
+    <div id='conteudo3'></div>
+    <div>Sem ID</div>
+
+    <script>
+        // Conteudo 1
+        $('#conteudo1').append('<p>1</p>') //como já visto antes o append adiciona algo no meu html, nesse caso estou adicionando um paragrafo no meu conteudo 1 que seria minha primeira div
+
+
+        //Conteudo 2
+        const elementos = [
+        $('<li>').append('Arroz'),//colocando na sintaxe <> estou dizendo que vou criar um elemento a partir dessa chamada sem o <> estou selecionando o elemento
+        $('<li>').append('Feijão'),
+        $('<li>').append('Carne') 
+        ]
+
+        const lista = $('<ul><li>Sorvete</li></ul>').prepend(elementos) //estou criando uma lista e com o prepend estou colocando os elementos que criei depois de sorvete em vez de ser antes na lista
+        $('#conteudo2').append(lista) //agora sim estou pegando a lista que
+        
+        //Conteudo 3
+        $('#conteudo3').append(['<h1>1</h1>','<h1>2</h1>'])
+            .prepend('<h1>0</h1>')
+        $('#conteudo3').html('<h1>123</h1>')//usando o html eu altero o conteudo que está no meu conteudo
+        $('#conteudo3').text('<h1>123</h1>')  //usando o text eu altero colocando um texto no conteudo que sobrescreve a div   
+       
+       //Alteradno todos
+       $('div[id]').html('<strong>Todos!</strong>') //alterando todas as divs que tem o atributo id
+       </script>
+</body>

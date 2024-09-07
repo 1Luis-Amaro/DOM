@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Manipulando Atributos</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+    <script src='js/jquery.js'></script>
+    <style>
+        [wm-relogio] {
+            text-align: center;
+        }
+
+        [wm-relogio] button {
+            font-size: 1.6em;
+            padding: 0px 25px;
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body class='conteudo exercicio'>
+    <h1>Manipulando Atributos</h1>
+    <div wm-relogio='1000'></div>
+    <script>
+        function Relogio(elemento){
+         const horaCerta = $('<p>').html('0') //criei a tag p e alterei o conteudo dentro dela usando o html colocando o 0
+         const botaoMenos = $('<button>').html('-')
+         const botaoMais = $('<button>').html('+')  
+
+         const $elemento = $(elemento)
+         $elemento.append(horaCerta, botaoMenos, botaoMais)
+
+         const getIntervaloAtual = 
+         () => parseInt($elemento.attr('wm-relogio'))
+
+         let temporizador = null
+         const iniciar = () => {
+            if(temporizador) clearInterval(temporizador)//se o temporazador não tiver nada eu limpo ele
+            temporizador = setInterval(()=>{        //se o temporizador tiver algum valor invoco uma função
+               horaCerta.html(new Date().toLocaleString("pt-br"))// na hora certa altero com o html desta forma criando a data atual e pedindo para dar uma string com uma caracteristica do brasil
+            },getIntervaloAtual())
+         }
+
+         const alterarIntervalo = delta => {
+            const novo = Math.max(getIntervaloAtual() + delta, 1000)// se o valor do intervalo + delta for maior do que o 1000 ele ira usar esse valor, senao usa o 1000 que deixei por padrao
+            $elemento.attr('wm-relogio', novo)
+            iniciar()
+        }
+
+        botaoMenos.click(e => alterarIntervalo(1000))
+        botaoMais.click(e => alterarIntervalo(-1000))
+        iniciar()
+        }
+
+        $('[wm-relogio]').each((i,e) => new Relogio(e))
+
+        
+        //$('[wm-relogio]').attr('opa') //forma de ler um atributo
+        //$('[wm-relogio]').attr('opa',3) //forma de alterar ou incluir algo no atributo
+        $('[wm-relogio]').attr({opa: 1, novo: true}) //forma de adicionar um novo atributo
+        $('[wm-relogio]').removeAttr('opa').removeAttr('novo') //como remover atributo
+    </script>
+</body>
