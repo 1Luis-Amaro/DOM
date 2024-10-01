@@ -1,0 +1,17 @@
+O comando SET SERVEROUTPUT especifica se a saída do buffer de mensagens DBMS_OUTPUT é redirecionada para a saída padrão.
+
+Autorização
+Privilégio EXECUTE no módulo DBMS_OUTPUT.
+
+Conexão necessária
+Base de dados
+
+
+SET SERVEROUTPUT
+OFF
+ON
+Parâmetros de comando
+SOBRE
+Especifica que as mensagens no buffer de mensagens são redirecionadas para a saída padrão.
+DESLIGADO
+Especifica que as mensagens no buffer de mensagens não são redirecionadas para a saída padrão.

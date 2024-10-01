@@ -1,0 +1,10 @@
+function calcularJuros(valor,percentualJuros) {
+    
+}
+
+function main() {
+    console.log('Programa principal');
+    calcularJuros();
+}
+
+main();

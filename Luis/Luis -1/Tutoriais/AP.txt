@@ -1,0 +1,42 @@
+-- interface
+select * from apps.ap_invoices_interface
+ 
+-- AP NFF
+select * from apps.ap_invoices_all
+select * from apps.ap_invoice_lines_all
+select * from apps.ap_invoice_distributions_all
+select * from apps.ap_payment_schedules_all
+select * from apps.ap_holds
+ 
+--AP pagamentos
+select * from apps.ap_checks_all
+select * from apps.ap_invoice_payments_all
+select * from apps.ap_payment_history_all
+ 
+-- Contabilização
+select * from apps.xla_events
+select * from apps.xla_ae_headers
+select * from apps.xla_ae_lines
+
+
+
+______________________________________________
+
+
+select * from all_tables
+where 1=1
+   and owner = 'AP'
+
+
+______________________________________________
+
+select * from apps.ap_invoices_interface
+where 1=1
+  and status = 'REJECTED'
+  and source like 'CLL%';
+
+______________________________________________
+
+select * from apps.ap_interface_rejections
+where 1=1
+  and parent_id = ;

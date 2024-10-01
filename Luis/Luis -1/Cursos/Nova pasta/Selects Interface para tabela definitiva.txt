@@ -1,0 +1,22 @@
+--depois de todo o processo, o wellington fez esse select para ver se as notas estavam na interface
+SELECT *
+FROM   apps.ra_interface_lines_all
+WHERE  interface_line_attribute3 IN
+			 ('94646092', '94646097', '94646098', '94646099');
+
+--e logo em seguida fez um select para poder ver se elas foram integradas para a tabela definitiva do AR
+SELECT *
+FROM apps.ra_customer_trx_all
+WHERE  interface_header_attribute3 IN
+			 ('94646092', '94646097', '94646098', '94646099')
+
+E caso der erro você faz esse select
+identificar erros na interface do ar
+ 
+SELECT *
+FROM   apps.ra_interface_errors_all
+WHERE  interface_line_id IN
+			 (SELECT interface_line_id
+				FROM   apps.ra_interface_lines_all
+				WHERE  interface_line_attribute3 IN
+							 ('94646092', '94646097', '94646098', '94646099'));

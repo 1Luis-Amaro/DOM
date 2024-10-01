@@ -1,0 +1,3 @@
+COMMIT é um comando do tipo TCL (Transaction Control). 
+Esse tipo de comando é usado para gerenciar as alterações feitas por comandos DML (Data Manipulation Language). 
+Sendo assim, todo comando DML precisa de COMMIT ou ROLLBACK.

@@ -1,0 +1,24 @@
+SELECT mp.organization_code
+                  ,hp.party_name
+                  ,rbsa.name
+                  ,rcta.trx_number
+                  ,rcta.customer_trx_id
+                  ,rctla.customer_trx_line_id
+                  ,msi.segment1
+                  ,rctla.global_attribute2
+                  ,rcta.*
+FROM   apps.ra_customer_trx_all       rcta
+                  ,apps.ra_customer_trx_lines_all rctla
+                  ,apps.ra_batch_sources_all      rbsa
+                  ,apps.mtl_system_items          msi
+                  ,apps.mtl_parameters            mp
+                  ,apps.hz_cust_accounts          hca
+                  ,apps.hz_parties                hp
+WHERE  rcta.customer_trx_id = rctla.customer_trx_id
+AND    rcta.batch_source_id = rbsa.batch_source_id
+AND    rctla.inventory_item_id = msi.inventory_item_id
+AND    rctla.warehouse_id = msi.organization_id
+AND    msi.organization_id = mp.organization_id
+AND    rcta.sold_to_customer_id = hca.cust_account_id
+AND    hca.party_id = hp.party_id
+AND    rcta.trx_number = '276417';

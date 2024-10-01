@@ -1,0 +1,3 @@
+Uma seção executável começa com a palavra-chave BEGIN e termina com a palavra-chave END
+
+Quando vou começar a executar o meu codigo

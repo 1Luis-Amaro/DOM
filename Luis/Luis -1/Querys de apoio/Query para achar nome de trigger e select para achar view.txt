@@ -1,0 +1,14 @@
+-- SELECT PARA ACHAR TRIGGERS
+SELECT * FROM DBA_TRIGGERS
+WHERE  trigger_name = 'XXPPG_ONT_HOLD_ORDERS_STATUS'
+
+UPPER (TABLE_NAME) = UPPER( 'oe_order_headers_all');
+
+
+--SELECT PARA CABEÇALHO DE ORDENS
+SELECT * FROM apps.oe_order_headers_all
+
+-- SELECT PARA VIEW
+SELECT *
+FROM all_views
+WHERE upper(view_name) = 'FND_CONC_REQ_SUMMARY_V'

@@ -1,0 +1,14 @@
+// Online Javascript Editor for free
+// Write, Edit and Run your Javascript code using JS Online Compiler
+
+function calcularJuros(valor,percentualJuros) {
+    
+}
+
+function main() {
+    console.log('Programa principal');
+    calcularJuros();
+}
+
+main();
+

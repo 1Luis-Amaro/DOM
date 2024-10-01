@@ -1,0 +1,4 @@
+Para que serve a função set?
+Use a função Set para definir o valor de uma variável global, 
+que armazena temporariamente uma informação,
+como o número de vezes que o usuário selecionou um botão ou o resultado de uma operação de dados.

@@ -1,0 +1,23 @@
+ELECT hp.party_name                  "CLIENTE"
+			 ,mp.organization_code           "COD ORGANIZACAO"
+			 ,rila.interface_line_attribute1 "ORDEM VENDA"
+			 ,rila.interface_line_attribute3 "EMBARQUE"
+			 ,msi.segment1                   "COD ITEM"
+			 ,msi.description                "DESCRICAO"
+			 ,msi.inventory_item_status_code "STATUS ITEM"
+			 ,riea.message_text              "ERRO INTERFACE"
+       ,riea.invalid_value             "VALOR INVALIDO"
+			 ,rila.*
+FROM   apps.ra_interface_lines_all  rila
+			,apps.mtl_system_items        msi
+			,apps.mtl_parameters          mp
+			,apps.hz_cust_accounts        hca
+			,apps.hz_parties              hp
+			,apps.ra_interface_errors_all riea
+WHERE  interface_line_attribute2 LIKE '%EXP%'
+AND    rila.inventory_item_id = msi.inventory_item_id
+AND    rila.warehouse_id = msi.organization_id
+AND    msi.organization_id = mp.organization_id
+AND    hca.cust_account_id = rila.orig_system_bill_customer_id
+AND    hca.party_id = hp.party_id
+AND    rila.interface_line_id = riea.interface_line_id(+);

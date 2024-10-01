@@ -1,0 +1,21 @@
+using System;
+					
+public class Program
+{
+	public static void Main()
+	{
+		int numero, div = 2;
+			
+		Console.WriteLine("Digite um numero");
+		numero = Convert.ToInt16(Console.ReadLine());
+		
+		div = numero / div;
+		
+		if (numero % 2 == 0){
+			Console.WriteLine("Par");
+		}
+		else{
+			Console.WriteLine("Impar");
+	}
+	}
+}

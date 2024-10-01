@@ -1,0 +1,201 @@
+using System;
+					
+public class Program
+{
+	public static void Main()
+	{
+		
+		int codigo, i, ii, cachorroquente = 4 , xbacon = 5, torradasimples = 2, quantidade; 
+		double xsalada = 4.50, refrigerante = 1.50,sim,soma2 = 0,total,soma = 0, total2, total3;
+		
+		Console.WriteLine(" opções: 1 cachorro quente, 2 xbacon, 3 torrada simples, 4 xsalada, 5 refrigerante ");
+		
+		Console.WriteLine("Digite o numero do seu pedido");
+		codigo = Convert.ToInt16(Console.ReadLine());
+		
+			
+		for (i = 0; i < codigo; i++)
+		{	
+						if (codigo > 5){
+							Console.WriteLine("Numero invalido, digite novamente");
+							codigo = Convert.ToInt16(Console.ReadLine());
+		}
+		}
+		
+		
+		if (codigo == 1){
+			Console.WriteLine("Seu pedido foi o cachorro quente, valor: " +cachorroquente+ " reais");
+			
+			Console.WriteLine("Digite quantos cachorros quentes você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			cachorroquente = 4;
+			soma = cachorroquente * quantidade;
+			total = Convert.ToDouble(soma);
+			Console.WriteLine("O valor total do seu pedido é: " +soma+ " reais");
+			
+		}
+		
+		else {
+			if (codigo == 2){
+			Console.WriteLine("Seu pedido foi o xbacon, valor: " +xbacon+ " reias");
+			
+			Console.WriteLine("Digite quantos xbacon você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			xbacon = 5;
+			soma = xbacon * quantidade;
+			total = soma;
+			Console.WriteLine("O valor total do seu pedido é: " +soma+ " reais");
+			;
+		}
+			else {
+				 if (codigo == 3){
+			Console.WriteLine("Seu pedido foi a torrada simples, valor " +torradasimples+ " reias");
+			
+			Console.WriteLine("Digite quantas torradas simples você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			torradasimples = 2;
+			soma = torradasimples * quantidade;
+			
+			Console.WriteLine("O valor total do seu pedido é: " +soma+ " reais");
+			;
+		}
+				else {
+				 if (codigo == 4){
+			Console.WriteLine("Seu pedido foi o xsalada e o valor é " +xsalada+ " reias");
+			
+			Console.WriteLine("Digite quantos xsaladas você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			xsalada = 4.50; 		 
+			soma = quantidade * xsalada;
+			
+			Console.WriteLine("O valor total do seu pedido é: " +soma+ " reais");
+				 }
+					else {
+						if (codigo == 5){
+							Console.WriteLine("Seu pedido foi um refrigerante e o valor é " +refrigerante+ " reias");
+							
+							Console.WriteLine("Digite quantos refrigerantes você quer:");
+							quantidade = Convert.ToInt16(Console.ReadLine());
+							
+							refrigerante = 1.50;
+							soma = quantidade * refrigerante;
+							Console.WriteLine("O valor total do seu pedido é: " +soma+ " reais");
+						}
+						
+						
+						}
+					}
+			}
+		}
+	
+				
+	
+	
+				
+						total = soma;
+						
+						Console.WriteLine("Deseja mais alguma coisa? se sim, novamente essas são as opções: 1 cachorro quente, 2 xbacon, 3 torrada simples, 4 xsalada, 5 refrigerante");
+						sim = Convert.ToInt16(Console.ReadLine());
+		
+							for (ii = 0; ii < sim; ii++){
+		
+							if (sim > 5){
+							Console.WriteLine("Numero invalido, digite novamente");
+							sim = Convert.ToInt16(Console.ReadLine());
+							}
+							}
+		if (sim == 1){
+			Console.WriteLine("Seu pedido foi o cachorro quente, valor: "+cachorroquente+ " reais");
+			
+			Console.WriteLine("Digite quantos cachorros quentes você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			cachorroquente = 4;
+			
+							
+			soma2 = cachorroquente * quantidade;
+			
+				
+			//Console.WriteLine("O valor total do seu pedido era:" +soma+ "mas agora com os adcionais ficou: " +total+ " reais");
+		}
+		
+		else {
+			if (sim == 2){
+			Console.WriteLine("Seu pedido foi o xbacon, valor: " +xbacon+ " reais");
+			
+			Console.WriteLine("Digite quantos xbacon você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			xbacon = 5;
+			
+			soma2 = xbacon * quantidade;
+			
+				
+			//Console.WriteLine("O valor total do seu pedido era:" +soma+ "mas agora com os adcionais ficou: " +total+ " reais");
+		}
+			else {
+				 if (sim == 3){
+			Console.WriteLine("Seu pedido foi a torrada simples, valor " +torradasimples+ " reais");
+			
+			Console.WriteLine("Digite quantas torradas simples você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			torradasimples = 2;
+			soma2 = torradasimples * quantidade;
+			
+				
+			//Console.WriteLine("O valor total do seu pedido era:" +soma+ "mas agora com os adcionais ficou: " +total+ " reais");
+		}
+				else {
+				 if (sim == 4){
+			Console.WriteLine("Seu pedido foi o xsalada e o valor é " +xsalada+ " reais");
+			
+			Console.WriteLine("Digite quantos xsaladas você vai querer:");
+			quantidade = Convert.ToInt16(Console.ReadLine());
+			
+			xsalada = 4.50; 		 
+			
+			soma2 = xsalada * quantidade;
+			
+				
+			//Console.WriteLine("O valor total do seu pedido era: " +soma+ " reais mas agora com os adcionais ficou: " +total+ " reais");
+				 }
+					else {
+						if (sim == 5){
+							Console.WriteLine("Seu pedido foi um refrigerante e o valor é " +refrigerante+ " reais");
+							
+							Console.WriteLine("Digite quantos refrigerantes você quer:");
+							quantidade = Convert.ToInt16(Console.ReadLine());
+							
+							refrigerante = 1.50;
+							
+							soma2 = refrigerante * quantidade;
+				}
+						else {
+								Console.WriteLine("Valor invalido, digite novamente");
+								sim  = Convert.ToDouble(Console.ReadLine());
+						}
+					}
+				}
+			}
+		}
+	
+						
+						total2 = soma2;
+						
+						total3 = total + total2;
+						
+						Console.WriteLine("Antes o valor total era " +total+ " mas com os adcionais o valor total passou a ser " +total3);
+						
+						
+
+								}
+				}
+		
+	
+
+		

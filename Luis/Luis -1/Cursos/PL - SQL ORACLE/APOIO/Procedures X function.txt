@@ -1,0 +1,10 @@
+Bom em relação às diferenças entre Procedures e Functions, aqui estão algumas que acho principais:
+
+Functions retornam valores ;
+Procedures podem ou não retornar um valor.
+Functions podem ser usadas em uma instrução SELECT;
+Procedures não podem ser usadas em uma instrução SELEC.
+Functions podem ter apenas parâmetros de entrada;
+Procedures podem ter parâmetros de entrada / saída.
+Functions podem ser chamadas de dentro de Procedures ;
+Procedures não podem ser chamados a partir de functions.

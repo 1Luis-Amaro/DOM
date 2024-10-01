@@ -1,0 +1,3 @@
+Em um banco de dados Oracle, a ROWID pseudocoluna é o endereço físico de uma linha em uma tabela.
+Essa pseudocoluna é usada para identificar de forma exclusiva uma linha,
+mesmo que a chave primária não esteja presente em uma tabela.

@@ -1,0 +1,146 @@
+select * from apps.ap_supplier_contacts ORDER BY 1 DESC;
+
+(SELECT DISTINCT
+               DECODE(PVC.AREA_CODE||PVC.PHONE
+                     ,NULL,NULL
+                     ,'('||PVC.AREA_CODE||')'
+                         ||PVC.PHONE)                   CAMPO_12
+              ,PVC.FIRST_NAME ||' '||
+               PVC.MIDDLE_NAME||' '||
+               PVC.LAST_NAME                            CAMPO_14
+              ,PVC.EMAIL_ADDRESS                        CAMPO_17
+              ,PVC.VENDOR_SITE_ID
+        FROM APPS.PO_VENDOR_CONTACTS             PVC
+            ,(SELECT PVC1.VENDOR_SITE_ID
+                    ,MIN(PVC1.VENDOR_CONTACT_ID) VENDOR_CONTACT_ID
+                FROM APPS.PO_VENDOR_CONTACTS             PVC1
+               GROUP BY PVC1.VENDOR_SITE_ID) PVC1
+     WHERE PVC.VENDOR_CONTACT_ID = PVC1.VENDOR_CONTACT_ID)            PVC
+
+SELECT * FROM APPS.PO_VENDOR_CONTACTS             PVC order by 1 desc; where vendor_site_id = 1630084;
+
+SELECT * FROM APPS.PO_VENDOR_CONTACTS             PVC where phone like '%99212%'
+
+select * from APPS.AP_SUPPLIERS PV where vendor_name like 'ALGAR T%'
+
+SELECT * from AP_SUPPLIER_SITES_ALL PVS where vendor_id = 1814914;
+
+SELECT fu.description "Last Updated",
+       fu4.description "Created by",
+       pv.*,
+       fu2.description "Last Updated By",
+       fu3.description "Created by",
+       pvs.*,
+  PV.VENDOR_NAME,
+  PV.SEGMENT1,
+  PV.ATTRIBUTE1,
+  --PV.VENDOR_TYPE_LOOKUP_CODE,
+  PVS.VENDOR_SITE_CODE,
+  --PVS.INACTIVE_DATE,
+  pvs.global_attribute9,
+  PVS.GLOBAL_ATTRIBUTE10||PVS.GLOBAL_ATTRIBUTE11||PVS.GLOBAL_ATTRIBUTE12 CNPJ
+,PVS.GLOBAL_ATTRIBUTE10 RAIZ
+,PVS.VENDOR_SITE_ID
+,PV.PARTY_ID
+,PVS.PARTY_SITE_ID
+  --,PVS.PURCHASING_SITE_FLAG, PVS.PAY_SITE_FLAG
+  --,PVS.GLOBAL_ATTRIBUTE15
+  --,PVS.payment_method_lookup_code
+  --,PVS.EMPLOYEE_ID
+  --,PVS.*
+  ,PVS.LAST_UPDATE_DATE
+--
+FROM
+  APPS.AP_SUPPLIERS PV,
+  APPS.AP_SUPPLIER_SITES_ALL PVS,
+  apps.fnd_user fu,
+  apps.fnd_user fu4,  
+  apps.fnd_user fu2,
+  apps.fnd_user fu3
+  --,APPS.PER_PEOPLE_F PPF
+--
+WHERE     fu.user_id  = pv.last_updated_by
+      AND fu4.user_id = pv.created_by
+      AND fu2.user_id = pvs.last_updated_by
+      AND fu3.user_id = pvs.created_by   
+    --  and pv.vendor_name in ('COMEX','BASF CORPORATION')   
+      and PV.VENDOR_ID = PVS.VENDOR_ID(+)
+   --AND LENGTH(PVS.GLOBAL_ATTRIBUTE10) < 9
+ --  AND PV.SEGMENT1 IN('001578780')
+   --AND PV.VENDOR_NAME LIKE '%SECRE%FAZ%'
+   --AND  decode(pvs.global_attribute9,'3', PV.SEGMENT1 , PVS.GLOBAL_ATTRIBUTE10||PVS.GLOBAL_ATTRIBUTE11||PVS.GLOBAL_ATTRIBUTE12) IN('29225450087')
+   --AND PV.CREATION_DATE > SYSDATE-1
+   --AND NVL(VENDOR_TYPE_LOOKUP_CODE,'VENDOR')  NOT IN('EMPLOYEE','TAX AUTHORITY')
+   --AND VENDOR_SITE_ID NOT IN(2120)
+   --AND PVS.VENDOR_ID IS NULL
+   --AND PVS.VENDOR_ID IN(1083,1065)
+   --AND PPF.EMPLOYEE_NUMBER IN('30019041')
+   --AND PPF.PERSON_ID = PV.EMPLOYEE_ID(+)
+   --AND VENDOR_NAME LIKE '%ALUFER%'
+   --AND PV.VENDOR_NAME IN('CASA DO CAFE TREVIOLO SAO PAULO - EPP', 'ESTER C F TEIXEIRA SICCHIERI - EPP')
+   --AND nvl(PVS.INACTIVE_DATE,sysdate+1) > sysdate
+   --AND PVS.PARTY_SITE_ID NOT IN(7078,8128,7041,7076,4021)
+   --AND PVS.ORG_ID IN(749,750,752,753,754,755,756,757,759,760,761,762,764,765,766,769,770,771,772,773,751,758,763,767,768)
+--)
+ORDER BY 2
+--UPDATE AP_SUPPLIER_SITES_ALL SET PURCHASING_SITE_FLAG = 'Y' WHERE VENDOR_SITE_ID IN(2220,2191,2206,2212,2211,2221,2227,2233,2243,2181,2201,2183,2235,2186,2210,2208,2188,2187,2178,2192,2241,2236,2239,2242,2238,2237,2240)
+;
+
+
+SELECT 
+      ASA.SEGMENT1||'-'||ASSA.VENDOR_SITE_CODE CODIGO_FORNECEDOR
+      ,ASA.VENDOR_NAME_ALT NOME_FANTASIA
+      ,ASA.VENDOR_NAME RAZAO_SOCIAL 
+      ,ASSA.ADDRESS_LINE1||' '|| ASSA.ADDRESS_LINE2||' '|| ASSA.ADDRESS_LINE3 ENDERECO
+      ,ASSA.ADDRESS_LINE4 BAIRRO
+      ,ASSA.CITY CIDADE
+      ,ASSA.STATE ESTADO
+      ,ASSA.COUNTRY PAIS
+      ,ASSA.ZIP CEP
+      ,PVC.CAMPO_12 TELEFONE
+      ,PVC.CAMPO_14 NOME_CONTATO
+      ,PVC.CAMPO_17 EMAIL
+      ,TO_CHAR(ASA.START_DATE_ACTIVE,'RRRRMM')  DATA_CADASTRO 
+      ,ASA.VENDOR_ID||
+       ASSA.VENDOR_SITE_ID
+FROM  APPS.AP_SUPPLIER_SITES_ALL          ASSA
+      ,APPS.AP_SUPPLIERS                  ASA
+      ,(SELECT DISTINCT
+               DECODE(PVC.AREA_CODE||PVC.PHONE
+                     ,NULL,NULL
+                     ,'('||PVC.AREA_CODE||')'
+                         ||PVC.PHONE)                   CAMPO_12
+              ,PVC.FIRST_NAME ||' '||
+               PVC.MIDDLE_NAME||' '||
+               PVC.LAST_NAME                            CAMPO_14
+              ,PVC.EMAIL_ADDRESS                        CAMPO_17
+              ,PVC.VENDOR_SITE_ID
+        FROM APPS.PO_VENDOR_CONTACTS             PVC
+            ,(SELECT PVC1.VENDOR_SITE_ID
+                    ,MIN(PVC1.VENDOR_CONTACT_ID) VENDOR_CONTACT_ID
+                FROM APPS.PO_VENDOR_CONTACTS             PVC1
+               GROUP BY PVC1.VENDOR_SITE_ID) PVC1
+     WHERE PVC.VENDOR_CONTACT_ID = PVC1.VENDOR_CONTACT_ID)            PVC
+      ,APPS.HZ_PARTIES                     HP
+      ,APPS.XLE_ENTITY_PROFILES            XEP
+      ,APPS.XLE_REGISTRATIONS              REG
+      ,APPS.HR_OPERATING_UNITS             HOU
+      ,APPS.HR_ALL_ORGANIZATION_UNITS_TL   HR_OUTL
+      ,APPS.HR_LOCATIONS_ALL               HR_LOC
+      ,APPS.GL_LEGAL_ENTITIES_BSVS         GLEV
+WHERE ASSA.VENDOR_ID                = ASA.VENDOR_ID
+   AND PVC.VENDOR_SITE_ID (+)        = ASSA.VENDOR_SITE_ID
+   AND ASA.PARTY_ID                  = HP.PARTY_ID
+   AND ASSA.ORG_ID                   = HR_OUTL.ORGANIZATION_ID
+   AND ASA.VENDOR_TYPE_LOOKUP_CODE  <> 'EMPLOYEE'
+   AND XEP.TRANSACTING_ENTITY_FLAG   =  'Y'   
+   AND XEP.LEGAL_ENTITY_ID           =  REG.SOURCE_ID   
+   AND REG.SOURCE_TABLE              =  'XLE_ENTITY_PROFILES'   
+   AND REG.IDENTIFYING_FLAG          =  'Y'   
+   AND XEP.LEGAL_ENTITY_ID           =  HOU.DEFAULT_LEGAL_CONTEXT_ID 
+   AND REG.LOCATION_ID               =  HR_LOC.LOCATION_ID   
+   AND XEP.LEGAL_ENTITY_ID           =  GLEV.LEGAL_ENTITY_ID
+   AND HR_OUTL.ORGANIZATION_ID       =  HOU.ORGANIZATION_ID 
+   AND HR_OUTL.LANGUAGE              = 'PTB'
+   AND ASSA.STATE = 'EX' 
+   AND ASA.END_DATE_ACTIVE IS NULL

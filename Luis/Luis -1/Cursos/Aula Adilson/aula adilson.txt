@@ -1,0 +1,51 @@
+SELECT *
+FROM GME_BATCH_HEADER GBH
+WHERE GBH.BATCH_NO = 202262 AND
+     ORGANIZATION_ID = 92;
+_____________________________________
+    
+SELECT *
+FROM gme_material_details
+WHERE BATCH_ID = 3809890 AND
+LINE_TYPE = -1;
+_____________________________________
+
+SELECT *
+FROM gme_material_details GMD, GME_BATCH_HEADER GBH
+WHERE GBH.BATCH_ID = 3809890 AND
+ GBH.BATCH_ID = GMD.BATCH_ID;
+
+_____________________________________
+
+SELECT *
+FROM FM_FORM_MST_B FMMB
+WHERE FMMB.FORMULA_NO = 'FIHA-00005' AND
+FORMULA_VERS = 11;
+
+______________________________________
+
+
+SELECT *
+FROM FM_MATL_DTL FMD
+WHERE FMD.FORMULA_ID = 115976;
+_______________________________________
+
+
+SELECT FMD.*
+FROM FM_MATL_DTL FMD, FM_FORM_MST_B FFMB --, MTL_SYSTEM_ITEMS_B
+WHERE FFMB.FORMULA_ID = 115976 AND
+ FFMB.FORMULA_ID = FMD.FORMULA_ID;
+________________________________________
+
+
+SELECT FFMB.FORMULA_NO,
+       FMD.LINE_NO,
+       MSIB.SEGMENT1
+  FROM FM_MATL_DTL FMD,
+       FM_FORM_MST_B FFMB,
+       MTL_SYSTEM_ITEMS_B MSIB
+ WHERE FFMB.FORMULA_ID        = 115976                AND
+       FFMB.FORMULA_ID        = FMD.FORMULA_ID        AND
+       MSIB.INVENTORY_ITEM_ID = FMD.INVENTORY_ITEM_ID AND
+       MSIB.ORGANIZATION_ID   = FMD.ORGANIZATION_ID;
+

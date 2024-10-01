@@ -1,0 +1,12 @@
+//forma de acessar um array pelo forEach e com uma function padrao
+const aprovados = ['agatha', 'aldo', 'daniel', 'raquel']
+
+aprovados.forEach(function(nome, indice){
+    console.log(`${indice + 1}) ${nome}`)
+})
+
+//nesses abaixo utilizo o arrow function, e só consigo utilizar um parametro
+aprovados.forEach(nome => console.log(nome))
+
+const exibirAprovados = aprovado => console.log(aprovado)
+aprovados.forEach(exibirAprovados)

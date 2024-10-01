@@ -1,0 +1,6 @@
+
+-- Mostrar erro nas packages
+select * from user_errors
+WHERE NAME = 'XXPPG_1102_OTC_INTREQ_REP_PKG'
+
+Obs: O NAME se refere ao nome da package e não do pacote em si.

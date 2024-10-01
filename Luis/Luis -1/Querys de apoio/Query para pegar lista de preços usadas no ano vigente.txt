@@ -1,0 +1,16 @@
+SELECT to_char(SYSDATE, 'RRRR') "Ano"
+             ,head.list_header_id
+             ,head.name
+             ,head.description
+             ,head.attribute1 "bu lista de preco"
+             ,head.currency_code
+             ,head.start_date_active
+             ,head.end_date_active
+             ,head.active_flag
+FROM   apps.qp_secu_list_headers_v head
+WHERE  EXISTS
+(SELECT 1
+                FROM   apps.oe_order_headers_all a
+                WHERE  to_char(a.creation_date, 'RRRR') = to_char(SYSDATE, 'RRRR')
+                AND    a.price_list_id = head.list_header_id)
+ORDER  BY head.name;

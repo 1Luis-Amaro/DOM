@@ -1,0 +1,17 @@
+
+
+const dividirComResto = function (dividendo = 103,divisor = 2){
+  let resultado = ( dividendo / divisor)
+ 
+    
+      
+  let resto =  (dividendo % divisor)
+ 
+console.log(`resultado da divisao: ${resultado}`)
+console.log(`resultado do resto: ${resto}`)
+}
+
+dividirComResto()
+
+
+    

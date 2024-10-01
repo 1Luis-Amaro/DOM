@@ -1,0 +1,13 @@
+Package specification contém as declarações de interface para um pacote, definindo os precedimentos, funções, 
+tipoes e variaveis podem ser acessados externamente
+
+
+
+Package body contém as implementações reais desses procedimentos e funcções, bem como definições para as variaveis 
+Basicamente a "specification" define o que um pacote faz, enquanto o "body" contém como ele faz
+
+
+
+
+
+Basicamente a "specification" define o que um pacote faz, enquanto o "body" contém como ele faz

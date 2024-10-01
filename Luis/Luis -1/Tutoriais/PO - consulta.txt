@@ -1,0 +1,38 @@
+----CONSULTA SIMPLIFICADA
+ 
+select prla.requisition_line_id,
+       prla.requisition_header_id,
+       prha.segment1 NUM_REQUISICAO,
+       rctla.customer_trx_id,
+       rcta.trx_number NUM_NOTA,
+       rcta.creation_date,
+       prla.item_id,
+       prla.quantity,
+       fuRQ.user_name RQ_CRIADA_POR,
+       prla.unit_price "$_RQ",
+       --oola.line_id,
+       --fuOM.user_name OM_CRIADA_POR,
+       --fuOM2.user_name OM_ATUALIZADO_POR,
+       oola.unit_selling_price "$_OM",
+       rctla.unit_selling_price "$_AR"
+from apps.po_requisition_headers_all prha,
+     apps.po_requisition_lines_all prla,
+     apps.oe_order_lines_all oola,
+     apps.ra_customer_trx_lines_all rctla,
+     apps.ra_customer_trx_all rcta,
+     apps.fnd_user fuRQ,
+     apps.fnd_user fuOM,
+     apps.fnd_user fuOM2
+where 1=1
+and fuOM2.user_id = oola.last_updated_by
+and fuOM.user_id = oola.created_by
+and fuRQ.employee_id = prha.preparer_id
+and prha.requisition_header_id = prla.requisition_header_id
+and rctla.customer_trx_id = rcta.customer_trx_id
+and prla.requisition_line_id = oola.source_document_line_id
+and oola.line_id = rctla.interface_line_attribute6
+and rctla.line_type = 'LINE'
+--and prla.requisition_line_id = some(50515940,50515941)
+and prla.requisition_header_id = 3159635
+order by 5;
+tem menu de contexto

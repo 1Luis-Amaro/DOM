@@ -1,0 +1,16 @@
+function idade (num) {
+	if(num > 12 && num < 18){
+  console.log('você é adolescente')
+  } 
+  else if (num >=18 ){
+  console.log('voce você é maior de idade')
+  }
+  else if(num >= 65){
+  console.log('você é idoso')
+  }
+  else{
+  console.log('voce é crianca')
+  }
+}
+
+idade (65)

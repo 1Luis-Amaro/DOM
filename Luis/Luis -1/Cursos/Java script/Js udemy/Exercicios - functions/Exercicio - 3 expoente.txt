@@ -1,0 +1,11 @@
+let calculo = function (base, expoente){
+		return(base**expoente)}
+    
+console.log(calculo(2,3))
+    
+//ou de outra forma usando o math
+
+let calculo2 = function (base, expoente){
+		return Math.pow(base, expoente)}
+    
+console.log(calculo2(2,3))

@@ -1,0 +1,28 @@
+--Tabela para identificar erros 
+SELECT *
+  FROM apps.ra_INTERFACE_ERRORS_all
+ WHERE INTERFACE_LINE_ID = 101695991;
+
+--Tabela para consultar atributos na tabela de interface
+SELECT *
+  FROM apps.ra_INTERFACE_LINES_all
+ WHERE interfacE_LINE_Attribute3 IN ('87047708');
+ 
+--tabela para consultar itens de inventário 
+SELECT * 
+  FROM apps.MTL_SYSTEM_ITEMS 
+ WHERE INVENTORY_ITEM_ID IN ( 561560,13659);
+ 
+--tabela de detalhes de org de inventario 
+ SELECT * 
+  FROM apps.HR_ALL_ORGANIZATION_UNITS
+
+ -- tabela para localizar todos os parametros
+ SELECT * 
+  FROM apps.MTL_parameters
+  
+  
+--table que tem nome de todas as tables
+  SELECT *
+  FROM all_tables
+  WHERE table_name LIKE '%HR%ORG%'

@@ -1,0 +1,20 @@
+using System;
+					
+public class Program
+{
+	public static void Main()
+	{
+		int numero;
+			
+		Console.WriteLine("Digite um numero");
+		numero = Convert.ToInt16(Console.ReadLine());
+		
+		if (numero >=0){
+			Console.WriteLine("Numero nao negativo");
+		}
+		else{
+			Console.WriteLine("Numero negativo");
+	}
+	}
+}
+

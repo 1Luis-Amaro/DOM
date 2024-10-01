@@ -1,0 +1,17 @@
+const pessoa = {
+nome: 'luis',
+idade: 19,
+endereco: {
+	logradouro: 'rua da alegira',
+  numero: 123
+}
+
+}
+
+const {nome, idade } = pessoa
+console.log(nome, idade)
+
+const {nome: n, idade: e } = pessoa
+console.log(n, e)
+
+console.log(pessoa)

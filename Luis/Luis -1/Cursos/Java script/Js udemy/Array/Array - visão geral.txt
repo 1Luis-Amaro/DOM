@@ -1,0 +1,31 @@
+//uma forma de usar o array
+let aprovados = new Array('bia', 'carlos', 'ana')
+console.log(aprovados)
+
+//forma mais utilizada e indicada
+aprovados = ['bia', 'carlos', 'ana']
+console.log(aprovados[0])
+console.log(aprovados[1])
+console.log(aprovados[2])
+console.log(aprovados[3])
+
+aprovados[3] = 'paulo'//como não tinha nada no indice 3 eu estou incluindo dessa forma
+aprovados.push('Abia')//mas também posso fazer dessa forma, que é a mais utilizada
+
+console.log(aprovados.length) //usando o lenght estou retornando ou defindo o número de elementos em um determinado array.
+
+aprovados[9] = 'Rafael'
+console.log(aprovados.length)
+console.log(aprovados[8] === undefined)
+
+console.log(aprovados)
+aprovados.sort() //o sort eu ordeno a minha lista
+console.log(aprovados)
+
+delete aprovados[1]
+console.log(aprovados[1])
+console.log(aprovados[2])
+
+aprovados = ['bia', 'carlos', 'ana']
+aprovados.splice(1,2, 'Elemento1','Elemento2') //o splice excluo e incluo elementos, passei 2 parametros o 1 e 2, e depois coloquei o as informações que queria 
+console.log(aprovados)

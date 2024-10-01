@@ -1,0 +1,2 @@
+SELECT * FROM apps.fnd_user
+WHERE user_id =

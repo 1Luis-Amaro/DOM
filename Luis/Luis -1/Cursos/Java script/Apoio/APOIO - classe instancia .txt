@@ -1,0 +1,5 @@
+Classe - é uma definição do que deveria ser - 
+exemplo: Pessoa
+
+instancia - é uma ocorrencia do objeto - 
+exemplo - luis

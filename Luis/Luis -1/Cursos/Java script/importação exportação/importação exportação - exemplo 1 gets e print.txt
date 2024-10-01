@@ -1,0 +1,17 @@
+// isso vai ser em uma guia, para que eu exporte para outra, usando o objeto module.exports 
+function gets(){
+	return 10;
+}
+
+function print(texto) {
+	console.log(texto);
+}
+
+module.exports = {gets, print };
+
+
+//aqui eu importo as functions de outra guia
+
+const funcoes = require('./funcoes-auxiliares');//nome do arquivo...
+
+console.log(funcoes)

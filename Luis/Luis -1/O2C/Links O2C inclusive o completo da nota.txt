@@ -1,0 +1,28 @@
+https://www.youtube.com/watch?v=2GhAbWGz7iA
+
+Order to Cash(O2C) flow in Oracle Applications
+
+
+----//////----
+
+Order to cash cycle in oracle
+http://erpschools.com/articles/order-to-cash-cycle-video
+
+
+https://ppgindustriesinc-my.sharepoint.com/personal/wduarte_ppg_com/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fwduarte%5Fppg%5Fcom%2FDocuments%2FRecordings%2FCall%20with%20dos%20Santos%2C%20Hudson%20%5BC%5D%2D20220215%5F095413%2DMeeting%20Recording%2Emp4&parent=%2Fpersonal%2Fwduarte%5Fppg%5Fcom%2FDocuments%2FRecordings
+
+-- O2C ciclo de vida
+http://oracleapps88.blogspot.com/2014/06/oracle-order-to-cash-o2c-life-cycle.html
+
+-- Mudanças quando acotnece o processo de gerar nota no banco oracle
+http://oracleapps88.blogspot.com/2015/12/data-flow-for-order-to-cash-cycle-in.html
+
+-- Descrição tabelas oracle fluxo o2c
+http://oracleapps88.blogspot.com/2012/03/order-2-cash-flow.html
+
+--Efeitos na tabela na hora de gerar uma ordem
+http://oracleapps88.blogspot.com/2015/12/effected-tables-in-order-management-in.html
+
+
+-- Mais um ciclo de o2c completo com movimentações das tabelas
+https://www.oracleapps2fusion.com/2014/02/orader-to-cash-o2c-r12.html?m=0

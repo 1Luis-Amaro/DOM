@@ -1,0 +1,101 @@
+DROP VIEW APPS.XXPPG_RI_PS_FRETE_NF_PEND_V2;
+
+/* Formatted on 08/11/2023 14:46:39 (QP5 v5.354) */
+CREATE OR REPLACE FORCE VIEW APPS.XXPPG_RI_PS_FRETE_NF_PEND_V2
+(
+    ORG_ID,
+    ORGANIZATION_ID,
+    ORGANIZATION_CODE,
+    NUMERO_RECEBIMENTO,
+    NUMERO_NF,
+    INVOICE_TYPE_CODE,
+    REVERSION_FLAG,
+    ATTRIBUTE1,
+    ATTRIBUTE6
+)
+BEQUEATH DEFINER
+AS
+      SELECT org_id,
+             organization_id,
+             organization_code,
+             operation_id,
+             numero_nf,
+             invoice_type_code,
+             reversion_flag,
+             attribute1,
+             attribute6
+        FROM (SELECT hoi.org_information3     org_id,
+                     mp.organization_id,
+                     mp.organization_code,
+                     a.operation_id,
+                     a.invoice_num            numero_nf,
+                     d.invoice_type_code,
+                     c.reversion_flag,
+                     a.attribute1,
+                     a.attribute6
+                FROM apps.cll_f189_invoices           a,
+                     apps.cll_f189_entry_operations   c,
+                     apps.cll_f189_fiscal_entities_all e,
+                     apps.cll_f189_invoice_types      d,
+                     apps.mtl_parameters              mp,
+                     apps.hr_organization_information hoi,
+                     apps.fnd_lookup_values_vl        flvv
+               WHERE     1 = 1
+                     AND flvv.lookup_type = 'XXPPG_PS_FRETE_ACCOUNT_RULES'
+                     AND flvv.description NOT IN ('NF_COMPLEMENTAR')
+                     AND d.invoice_type_code = flvv.lookup_code
+                     AND a.attribute5 = 'T'
+                     AND c.organization_id = a.organization_id
+                     AND a.organization_id = mp.organization_id
+                     AND a.entity_id = e.entity_id
+                     AND c.operation_id = a.operation_id
+                     AND a.organization_id = d.organization_id
+                     AND a.invoice_type_id = d.invoice_type_id
+                     AND hoi.organization_id = mp.organization_id
+                     AND NVL (a.attribute_category, 'N') <> 'SOFTWAY'
+                     AND hoi.org_information_context = 'Accounting Information'
+                     AND a.invoice_date >= TO_DATE ('01/08/2023', 'dd/mm/yyyy')
+                     AND (       c.status = 'COMPLETE'
+                             AND NVL (c.reversion_flag, 'I') <> 'S'
+                          OR ((c.status = 'COMPLETE' AND c.reversion_flag = 'R'))
+                          OR ((c.status = 'COMPLETE' AND c.reversion_flag = 'R')))
+              UNION
+              SELECT hoi.org_information3     org_id,
+                     mp.organization_id,
+                     mp.organization_code,
+                     cfi_dev.operation_id,
+                     cfi_dev.invoice_num      numero_nf,
+                     cfit_comp.invoice_type_code,
+                     cfeo_dev.reversion_flag,
+                     cfi_dev.attribute1,
+                     cfi_dev.attribute6
+                FROM cll_f189_invoices          cfi_comp,
+                     cll_f189_invoice_types     cfit_comp,
+                     cll_f189_entry_operations  cfeo_comp,
+                     cll_f189_invoices          cfi_dev,
+                     cll_f189_invoice_types     cfit_dev,
+                     cll_f189_entry_operations  cfeo_dev,
+                     mtl_parameters             mp,
+                     hr_organization_information hoi,
+                     fnd_lookup_values_vl       flvv
+               WHERE     cfi_comp.invoice_type_id = cfit_comp.invoice_type_id
+                     AND cfeo_comp.operation_id = cfi_comp.operation_id
+                     AND cfi_comp.invoice_date >=
+                         TO_DATE ('01/08/2023', 'dd/mm/yyyy')
+                     AND cfi_dev.invoice_date >=
+                         TO_DATE ('01/08/2023', 'dd/mm/yyyy')
+                     AND cfeo_comp.organization_id = cfi_comp.organization_id
+                     AND cfi_comp.attribute5 = 'T'
+                     AND cfi_dev.operation_id = cfi_comp.attribute6
+                     AND cfi_dev.organization_id = cfi_comp.organization_id
+                     AND cfi_dev.invoice_type_id = cfit_dev.invoice_type_id
+                     AND cfeo_dev.operation_id = cfi_dev.operation_id
+                     AND cfeo_dev.organization_id = cfi_dev.organization_id
+                     AND hoi.organization_id = mp.organization_id
+                     AND mp.organization_id = cfi_dev.organization_id
+                     AND hoi.org_information_context = 'Accounting Information'
+                     AND flvv.lookup_type = 'XXPPG_PS_FRETE_ACCOUNT_RULES'
+                     AND flvv.description = 'NF_COMPLEMENTAR'
+                     AND cfit_comp.invoice_type_code = flvv.lookup_code
+                     AND cfeo_comp.status = 'COMPLETE')
+    ORDER BY organization_id, operation_id;

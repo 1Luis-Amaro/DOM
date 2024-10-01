@@ -1,0 +1,6 @@
+<a>Link</a>
+
+<a href="linkedin.com/in/vilaboim">Linkedin</a> 
+
+<a target="_blank">Link</a> = abro um link em uma nova pagina
+

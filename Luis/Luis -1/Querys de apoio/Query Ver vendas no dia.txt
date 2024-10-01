@@ -1,0 +1,19 @@
+SELECT rbsa.name
+            ,ooha.order_number
+            ,rctta.name tipo_venda
+            ,ooha.sales_channel_code
+            ,rctta.*
+FROM   apps.ra_customer_trx_all  rcta
+            ,apps.ra_batch_sources_all rbsa
+            ,apps.oe_order_headers_all ooha
+      ,apps.ra_cust_trx_types_all rctta
+WHERE  rcta.batch_source_id = rbsa.batch_source_id
+AND    trunc(rcta.creation_date) >= trunc(SYSDATE - 3)
+AND    ooha.order_number = rcta.interface_header_attribute1
+AND    rcta.org_id = 82
+AND    ooha.org_id = 82
+AND    rcta.interface_header_context = 'ORDER ENTRY'
+AND    rbsa.name IN 'GVT_SERIE_17_PRODUTO_IMP'
+AND    ooha.sales_channel_code = 'ARQ'
+AND    rcta.cust_trx_type_id = rctta.cust_trX_type_id
+ORDER  BY 6, 1, 2, 3, 4;

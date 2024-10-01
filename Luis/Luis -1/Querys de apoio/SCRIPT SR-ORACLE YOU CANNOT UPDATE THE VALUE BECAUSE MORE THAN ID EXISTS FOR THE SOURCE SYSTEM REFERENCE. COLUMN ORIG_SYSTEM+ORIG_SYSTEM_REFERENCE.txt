@@ -1,0 +1,22 @@
+DECLARE
+  CURSOR c1 IS 
+    SELECT org_id
+         , hcsua.orig_system_reference
+         , COUNT(1)
+      FROM apps.hz_cust_site_uses_all hcsua
+	 GROUP BY org_id
+         , hcsua.orig_system_reference  
+    HAVING COUNT(1) > 1;
+  --
+  l_count NUMBER:= 0;
+BEGIN
+  FOR r1 IN c1 LOOP 
+    l_count := l_count + 1;
+    UPDATE apps.HZ_CUST_SITE_USES_ALL hcsua
+       SET orig_system_reference = DECODE(site_use_code,'BILL_TO',orig_system_reference||'_F', orig_system_reference||'_E')
+     WHERE orig_system_reference = r1.orig_system_reference
+       AND org_id = r1.org_id;
+  END LOOP;
+  DBMS_OUTPUT.PUT_LINE('ROWS UPDATED = '||l_count);
+END;         
+/

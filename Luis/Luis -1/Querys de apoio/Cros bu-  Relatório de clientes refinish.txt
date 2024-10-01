@@ -1,0 +1,43 @@
+SELECT hcasa.orig_system_reference "Codigo do Cliente"
+       ,hp.party_name "Cliente"
+       ,sales_channel "Canal de Venda"
+       ,(SELECT organization_code
+        FROM   apps.mtl_parameters
+        WHERE  organization_id = xocba.warehouse_id) "Cod Estabelecimento"
+       ,(SELECT DISTINCT NAME
+        FROM   apps.qp_list_headers_all
+        WHERE  list_header_id = xocba.price_list_id) "Cod Lista Preço"
+       ,(SELECT DISTINCT NAME
+        FROM   apps.ra_terms_tl
+        WHERE  term_id = xocba.payment_term_id) "Cond Pagamento"
+       ,customer_type "Tipo de Cliente"
+       ,activity_branch "Cod Ramo Atividade"
+       ,activity_subbranch "Cod Sub"
+       ,customer_class "Categoria Cliente"
+       ,(SELECT DISTINCT ship_method_code_meaning
+        FROM   apps.wsh_carrier_ship_methods_v a
+        WHERE  ship_method_code = xocba.ship_method_code) "Cod Trasnportadora"
+       ,(SELECT b.name
+        FROM   apps.oe_transaction_types_all a
+              ,apps.oe_transaction_types_tl  b
+        WHERE  b.language = 'PTB'
+        AND    a.transaction_type_id = b.transaction_type_id
+        AND    a.transaction_type_code = 'ORDER'
+        AND    a.transaction_type_id = xocba.order_type_id) "Natureza Operacao"
+       ,(SELECT jrs.salesrep_number
+        FROM   apps.jtf_rs_salesreps jrs, apps.jtf_rs_resource_extns jrre
+        WHERE  jrs.resource_id = jrre.resource_id
+        AND    jrre.category <> 'OTHER'
+        AND    jrs.salesrep_id = xocba.salesrep_id) "Codigo Representante"
+       ,(SELECT jrre.source_name contato
+        FROM   apps.jtf_rs_salesreps jrs, apps.jtf_rs_resource_extns jrre
+        WHERE  jrs.resource_id = jrre.resource_id
+        AND    jrre.category <> 'OTHER'
+        AND    jrs.salesrep_id = xocba.salesrep_id) representante
+       ,minimum_invoice_value
+       ,xocba.creation_date "DATA CRIACAO DO CADASTRO"
+FROM   apps.xxppg_om_cross_bu_all  xocba
+      ,apps.hz_parties             hp
+      ,apps.hz_cust_acct_sites_all hcasa
+WHERE  xocba.party_id = hp.party_id
+AND    xocba.cust_acct_site_id = hcasa.cust_acct_site_id

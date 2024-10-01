@@ -1,0 +1,16 @@
+--tabela para consultar itens de inventário 
+SELECT * 
+  FROM apps.MTL_SYSTEM_ITEMS 
+ WHERE INVENTORY_ITEM_ID IN ( 561560,13659);
+ 
+--tabela de detalhes de org de inventario 
+ SELECT * 
+  FROM apps.HR_ALL_ORGANIZATION_UNITS
+
+USAR LIMITES DE RESULTADOS
+--notas geradas
+-- cabeçalho
+SELECT *FROM apps.ra_customer_TRX_all
+ORDER BY LAST_UPDATE_DATE DESC
+FETCH FIRST 10 rows only;
+vc pode colocar rownum <=10

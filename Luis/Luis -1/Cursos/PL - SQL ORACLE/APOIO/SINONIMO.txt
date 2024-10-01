@@ -1,0 +1,12 @@
+Sinonimos são objetos do banco de dados que fazem relação a outros objetos.
+Podemos considerar um sinonimo como um link para outro objeto.
+
+Digamos que no owner “prod” vc tenha a tabela “produto”, e você precisa efetuar um select nesta tabela com o owner teste.
+Alem do grant que você terá de efetuar você deverá efetuar o select passando o owner antes do nome da tabela, assim.
+
+
+select * from prod.produto;
+
+Se você criar um sinonimo para esta tabela você não precisa referenciala ao owner.
+
+select * from produto;

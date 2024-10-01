@@ -1,0 +1,4 @@
+O comando SQL DISTINCT é utilizado para retornar apenas uma ocorrência 
+de campos que contenham dados repetidos. Esse recurso é útil
+para eliminar a duplicidade de informações e,
+assim, recuperar apenas o que será utilizado pela aplicação

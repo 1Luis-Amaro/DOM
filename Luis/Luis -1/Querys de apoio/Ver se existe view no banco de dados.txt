@@ -1,0 +1,10 @@
+	
+SELECT *
+        FROM dba_objects
+        WHERE object_name = 'XXAP_HOLD_DETAILS_V';
+
+
+
+      SELECT *
+        FROM all_objects
+        WHERE object_name = 'XXAP_HOLD_DETAILS_V';

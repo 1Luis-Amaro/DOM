@@ -1,0 +1,14 @@
+//Funcao sem retorno
+function imprimirSoma(a,b){
+	console.log(a+b)
+}
+
+imprimirSoma(2,2)
+
+//Funcao com retorno
+//ja dou um valor para o meu parametro, então caso não coloque nenhum valor no console.log ele vai usar o valor do parametro
+function soma(a = 2 ,b = 10){
+ return a + b
+}
+
+console.log (soma(2))

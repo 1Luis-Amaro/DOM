@@ -1,0 +1,2 @@
+TYPE para definir os tipos de dados de cada variável.
+Assim temos a garantia de que as variáveis terão os mesmos tipos que os campos correspondentes na tabela.

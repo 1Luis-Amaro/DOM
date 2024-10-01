@@ -1,0 +1,2 @@
+Uma procedure é um bloco de comandos ou instruções SQL organizados para executar uma ou mais tarefas. 
+Ela pode ser utilizada para ser acionada através de uma chamada simples que executa uma série de outros comandos.

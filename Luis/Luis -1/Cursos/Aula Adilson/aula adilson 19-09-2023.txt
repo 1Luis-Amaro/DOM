@@ -1,0 +1,19 @@
+select ohq.TRANSACTION_QUANTITY, 
+       mp.ORGANIZATION_CODE, 
+       msi.SEGMENT1,
+       ohq.LOT_NUMBER, 
+       ohq.SUBINVENTORY_CODE,
+       (select origination_date 
+       from apps.mtl_lot_numbers mln 
+       where mln.inventory_item_id = msi.inventory_item_id
+       and mln.lot_number = ohq.lot_number and rownum = 1 ) data
+       --and mln.organization_id = ohq.organization_id) fab
+ from   apps.mtl_onhand_quantities   ohq
+      ,apps.mtl_system_items_b       msi
+      ,apps.mtl_parameters           mp
+where  ohq.INVENTORY_ITEM_ID = msi.INVENTORY_ITEM_ID
+and    ohq.ORGANIZATION_ID   = mp.ORGANIZATION_ID  
+and    ohq.ORGANIZATION_ID   = msi.ORGANIZATION_ID 
+and    mp.ORGANIZATION_CODE  = 'AMB'
+and SEGMENT1 = '000000-2225'
+order by lot_number desc;

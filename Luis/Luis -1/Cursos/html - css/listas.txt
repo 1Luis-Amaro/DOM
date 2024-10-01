@@ -1,0 +1,12 @@
+<ul>
+item 1
+item 2 
+
+é uma lista ordenada
+
+
+<ol>
+1 item 1
+2 item 3 
+
+<li> é um item dessas listas

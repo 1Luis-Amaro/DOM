@@ -1,0 +1,4 @@
+Procedure é formada por um conjunto de comandos ou instruções SQL organizadas para executar
+uma ou mais tarefas no banco de dados.
+
+um bloco de instrução

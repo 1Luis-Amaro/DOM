@@ -1,0 +1,8 @@
+select b.name origem,c.name tipo_nf,a.trx_date,a.trx_number
+from apps.ra_customer_trx_all a,
+    apps.ra_batch_sources_all b,
+    apps.ra_cust_trx_types_all c
+    where a.batch_source_id = b.batch_source_id
+    and a.cust_trx_type_id = c.cust_trx_type_id
+    and trunc(a.creation_date) >= trunc(sysdate)
+    order by 1,4

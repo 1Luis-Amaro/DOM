@@ -1,0 +1,21 @@
+let PrecoGasolina = 5.80
+let PrecoEtanol = 3
+let KmCarro = 9 
+let Viagem = 100
+let LitrosConsumidos  = Viagem / KmCarro
+let TotalGasolinha = LitrosConsumidos * PrecoGasolina
+let TotalEtanol = LitrosConsumidos * PrecoEtanol
+
+let Total = prompt('Digite 1 caso utilize Gasolina ou Digite 2 caso utilize Etanol');
+
+
+if (Total >= 3 || Total< 1){
+    console.log('numero invalido');
+}
+
+else if (Total == 1){
+    console.log('O total da viagem por gasolinha foi', TotalGasolinha );
+}
+else {
+    console.log('O total da viagem por Etanol foi', TotalEtanol);
+}

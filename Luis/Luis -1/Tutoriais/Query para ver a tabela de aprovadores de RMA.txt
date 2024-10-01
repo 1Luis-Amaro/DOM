@@ -1,0 +1,4 @@
+SELECT *
+FROM   dba_objects
+WHERE  object_name LIKE 'XXPPG%RMA%'
+AND    object_type = 'TABLE'

@@ -1,0 +1,31 @@
+const calculadora = function (valor1, operacao, valor2){
+	switch	(operacao){
+  case '+':
+  return valor1 + valor2 
+  
+  case '-':
+  return valor1 - valor2
+  
+  case '*': 
+  return valor1 * valor2
+  
+  case '/':
+  return valor1 / valor2
+  
+  default: 
+            return 'Não trabalhamos com este tipo de automóvel aqui.'
+ 
+ 
+  }
+} 
+
+console.log(calculadora(1, '+', 2));
+console.log(calculadora(1, '-', 2));
+console.log(calculadora(1, '*', 2));
+console.log(calculadora(1, '/', 2));
+console.log(calculadora(1, 'asd', 2));
+
+
+
+
+

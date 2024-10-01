@@ -1,0 +1,21 @@
+SELECT
+    a.concatenated_segments,
+    c.code_combination_id,
+    c.attribute3 method_id,
+    b.method_name,
+    b.description,
+    c.chart_of_accounts_id
+FROM
+    apps.gl_code_combinations_kfv a,
+    apps.xxgl_allocation_methods  b,
+    apps.gl_code_combinations_v   c
+WHERE
+        a.code_combination_id = c.code_combination_id
+    AND b.method_id = a.attribute3
+    AND a.enabled_flag = 'Y'--and b.method_id++++++=2801
+--and a.concatenated_segments='0819-00000-4110-41100000-000000-0000-0000' 
+    AND a.chart_of_accounts_id = c.chart_of_accounts_id
+    and a.segment1 = '3545'
+    --AND c.chart_of_accounts_id = '50330'
+ORDER BY
+    1 ASC;

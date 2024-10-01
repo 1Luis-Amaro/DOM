@@ -1,0 +1,46 @@
+AND    hcsua.site_use_code = 'SHIP_TO'
+AND    hps.party_id = hca.party_id
+AND    hcas.party_site_id = hps.party_site_id
+AND    hps.location_id = hl.location_id
+AND    jrs.salesrep_id = hcsua.primary_salesrep_id
+AND    jrse.resource_id = jrs.resource_id
+UNION
+--
+SELECT NULL party_name
+      ,NULL cnpj
+      ,NULL state
+      ,NULL city
+      ,qp.attribute1 bu
+      ,qp.name lista_preco
+      ,qp.currency_code 
+      ,qpl.product_attr_val_disp item
+      ,msi.description
+      ,qpl.product_uom_code
+      ,qpl.operand valor
+      ,apps.inv_convert.inv_um_convert(msi.inventory_item_id
+                                            ,msi.primary_uom_code
+                                            ,nvl(msi.secondary_uom_code
+                                                ,msi.primary_uom_code))
+             "EMBALAGEM"
+       ,qpl.last_update_date
+       ,NULL representante
+       ,NULL gerente
+       ,qp.active_flag 
+FROM   apps.qp_secu_list_headers_v qp
+      ,apps.qp_list_lines_v        qpl
+      ,apps.mtl_system_items       msi
+      ,apps.mtl_parameters         mp
+WHERE  qp.attribute1 = 'IND'
+      --qp.name in ('IN1046','PERTO182')
+AND    qp.list_header_id = qpl.list_header_id
+AND    msi.segment1 = qpl.product_attr_val_disp
+AND    msi.organization_id = mp.organization_id
+AND    mp.organization_id = 87 -- TUDO 
+--AND    mp.organization_code = 'AMB' --se quiser filtrar por org
+AND    nvl(qp.end_date_active, SYSDATE) >= SYSDATE
+AND    nvl(qpl.end_date_active, SYSDATE) >= SYSDATE
+AND    NOT EXISTS
+(SELECT 1
+        FROM   apps.hz_cust_site_uses_all hcsua
+        WHERE  qp.list_header_id = hcsua.price_list_id)
+ORDER  BY 1, 2, 3, 4, 5, 6,7;

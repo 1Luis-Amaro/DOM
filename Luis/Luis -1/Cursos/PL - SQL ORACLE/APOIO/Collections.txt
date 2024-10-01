@@ -1,0 +1,4 @@
+Em uma coleção , os componentes internos sempre possuem o mesmo tipo de dados, e são chamados de elementos . 
+Você pode acessar cada elemento de uma variável de coleção pelo seu índice único, com esta sintaxe: . 
+Para criar uma variável de coleção, você define um tipo de coleção e, em seguida, 
+cria uma variável desse tipo ou usa . variable_name(index)%TYPE

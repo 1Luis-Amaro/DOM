@@ -1,0 +1,12 @@
+Esta quantidade já deve estar reservada para algum embarque, ou outro processo
+
+Ou o lote está com status de interditado
+
+Primeiro procure se há reserva para o item/subinventario
+
+depois verifique o lote em estoque e veja como está o lote no Oracle
+
+pode ser que esteja interditado, vencido
+
+se não achar nada nestes pontos você pode abrir um chamado para a Ninecon investigar
+

@@ -1,0 +1,17 @@
+select a.line_Number linha_item,
+       a.description  descriçao_item,
+       a.customer_trx_line_id    id_linha, 
+       a.uom_code   unidade_medida,
+       a.global_attribute2   ncm_linha,
+       b.trx_number   nff,
+       b.trx_line_number,
+       b.trx_line_description,
+       b.product_fisc_classification  NCM_CERTO        
+from apps.ra_customer_trx_lines_all   a,
+      apps.zx_lines_det_factors  b
+where a.customer_trx_id = 3840649
+and a.line_type  = 'LINE'
+and a.customer_trx_id = b.trx_id
+and a.customer_trx_line_id = b.trx_line_id
+and a.line_number = b.trx_line_number
+order by a.line_number

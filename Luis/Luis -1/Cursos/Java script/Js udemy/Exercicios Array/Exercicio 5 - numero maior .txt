@@ -1,0 +1,10 @@
+const maior = function (numero1, numero2){
+    if (numero1  numero2){
+        console.log(numero 1 maior)
+    }
+    else{
+        console.log(numero 2 maior)
+    }
+}
+
+console.log(maior(3,2))

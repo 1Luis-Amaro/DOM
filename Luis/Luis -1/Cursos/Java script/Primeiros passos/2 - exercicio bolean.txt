@@ -1,0 +1,4 @@
+const numero = 1
+const enumeropar = (numero % 2) === 0; //irei fazer a divisão do numero, caso tenha resto na divisão vai ser falso já que numeros pares não tem nenhum resto
+
+console.log(enumeropar) 

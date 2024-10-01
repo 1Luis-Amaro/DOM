@@ -1,0 +1,7 @@
+for quando eu quero fazer uma quantidade determinada de laço de repetição
+
+quantidade indeterminada while
+
+selecao multipla switch 
+
+grandes intervalos use o if 

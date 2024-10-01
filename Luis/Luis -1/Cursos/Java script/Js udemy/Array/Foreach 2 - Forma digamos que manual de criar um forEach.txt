@@ -1,0 +1,15 @@
+//forma digamos que manual de criar um forEach
+Array.prototype.forEach2 = function (callback){
+    for (let i = 0; i < this.length; i++){
+        callback(this[i],i,this)
+    }
+}
+
+//forma de acessar um array pelo forEach e com uma function padrao
+const aprovados = ['agatha', 'aldo', 'daniel', 'raquel']
+
+aprovados.forEach2(function(nome, indice){
+    console.log(`${indice + 1}) ${nome}`)
+})
+
+////

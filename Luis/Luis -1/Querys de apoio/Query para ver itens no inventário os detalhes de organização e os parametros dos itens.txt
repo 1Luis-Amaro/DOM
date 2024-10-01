@@ -1,0 +1,11 @@
+--tabela para consultar itens de inventário 
+SELECT * 
+  FROM apps.MTL_SYSTEM_ITEMS 
+ WHERE INVENTORY_ITEM_ID IN ( 561560,13659);
+ 
+--tabela de detalhes de org de inventario 
+ SELECT * 
+  FROM apps.HR_ALL_ORGANIZATION_UNITS
+
+ -- tabela para localizar todos os parametros
+ SELECT *  FROM apps.MTL_parameters;

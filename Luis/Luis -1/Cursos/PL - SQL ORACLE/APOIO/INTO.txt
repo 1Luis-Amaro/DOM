@@ -1,0 +1,1 @@
+ INTO recupera várias linhas em uma matriz.

@@ -1,0 +1,26 @@
+-- Tabela para descobrir QUAL FILIAL
+SELECT mp.organization_code
+            ,rbsa.name                  serie_nf
+            ,rcta.creation_date         criacao_nf
+            ,rcta.customer_trx_id
+            ,rcta.trx_number
+            ,rctla.customer_trx_line_id
+      ,rctla.line_number
+            ,msi.segment1               cod_item
+            ,rctla.global_attribute1    cfop
+FROM   apps.ra_customer_trx_all       rcta
+            ,apps.ra_customer_trx_lines_all rctla
+            ,apps.mtl_system_items          msi
+            ,apps.ra_batch_sources_all      rbsa
+            ,apps.mtl_parameters            mp
+WHERE  rcta.customer_trx_id = rctla.customer_trx_id
+AND    rcta.batch_source_id = rbsa.batch_source_id
+AND    rctla.inventory_item_id = msi.inventory_item_id
+AND    rctla.warehouse_id = msi.organization_id
+AND    msi.organization_id = mp.organization_id
+AND    rcta.trx_number = '5684';
+
+
+
+-- Ver códigos das organizações 
+SELECT Organization_code, Organization_id FROM apps.mtl_parameters;

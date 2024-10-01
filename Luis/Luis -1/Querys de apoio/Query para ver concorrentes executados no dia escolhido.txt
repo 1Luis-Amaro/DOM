@@ -1,0 +1,10 @@
+SELECT user_concurrent_program_name
+            ,a.request_id
+            ,phase_code
+            ,status_code
+            ,actual_start_date
+            ,a.actual_completion_date
+            ,argument_text
+            ,a.*
+FROM   apps.fnd_conc_req_summary_v a
+WHERE  trunc(actual_start_date)  = to_date('19/10/2022', 'DD/MM/RRRR')

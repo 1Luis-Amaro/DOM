@@ -1,0 +1,6 @@
+const calcularSalario = function (quantidadeHoras, valorHora){
+    const valor = quantidadeHoras * valorHora
+    return 'Salario igual a R$'.concat(valor)
+}
+
+console.log(calcularSalario(150,9.8))

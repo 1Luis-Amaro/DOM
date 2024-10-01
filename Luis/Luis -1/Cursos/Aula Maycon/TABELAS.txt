@@ -1,0 +1,3 @@
+apps.ra_customer_trx_all - ARMAZENA OS DADOS DE CABEÇALHO DAS NOTAS FISCAIS DE SAIDA,
+
+apps.ra_batch_sources_all - ve o nome/origem da nota fiscal na tabela

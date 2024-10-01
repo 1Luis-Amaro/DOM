@@ -1,0 +1,24 @@
+-- Query para ver se a nota subiu para o mastersaf status 3 se deu erro status 2 deu certo
+select *
+from APPS.JL_BR_CUSTOMER_TRX_EXTS
+where customer_trx_id in (3324045);
+
+-- Query para ver log da nota/ integração mastersaf
+select *from apps.JL_BR_EILOG where customer_trx_id in (3275408);
+
+--Log de erro que o mastersaf devolveu para o Oracle
+select *
+from apps.JL_BR_EILOG
+where customer_trx_id in (3324045);
+   
+select *
+from apps.ra_customer_trx_all
+where trx_number in ('5864')
+where customer_trx_id in (select parameter_value1
+from apps.cll_f255_notifications
+Where trunc(creation_date) = trunc(sysdate)
+   and parameter_name1 = 'CUSTOMER_TRX_ID'
+   and isv_name = 'MASTERSAF'
+   and transaction_type = 'INSERT'
+   --and created_by = -1
+   and export_status = 1)

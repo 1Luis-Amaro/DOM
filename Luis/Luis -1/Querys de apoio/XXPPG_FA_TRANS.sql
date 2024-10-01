@@ -1,0 +1,61 @@
+  SELECT DISTINCT
+         FTH.BOOK_TYPE_CODE "LIVRO",
+         FTH.ASSET_ID ATIVO,
+         FTH.TRANSACTION_HEADER_ID TRX,
+         FTH.TRANSACTION_TYPE_CODE "TIPO TRX",
+         TO_CHAR (FAI.DATE_EFFECTIVE, 'DD/MM/YYYY') "DATA TRX",
+         TO_CHAR (XAL.ACCOUNTING_DATE, 'DD/MM/YYYY') "DATA CONTABIL",
+         XAH.PERIOD_NAME "PERIODO",
+         FAI.INVOICE_NUMBER "NR NFF",
+         XAL.AE_LINE_NUM "LINHA LCTO",
+         (CASE
+             WHEN NVL (XAL.ACCOUNTED_DR, 0) > NVL (XAL.ACCOUNTED_CR, 0)
+             THEN XAL.ACCOUNTED_DR
+               
+             ELSE
+                0
+          END)
+            "DEBITO",
+         (CASE
+             WHEN NVL (XAL.ACCOUNTED_DR, 0) < NVL (XAL.ACCOUNTED_CR, 0)
+             THEN XAL.ACCOUNTED_CR
+             ELSE
+                0
+          END)
+            "CREDITO",
+            GCC.SEGMENT1
+         || '-'
+         || GCC.SEGMENT2
+         || '-'
+         || GCC.SEGMENT3
+         || '-'
+         || GCC.SEGMENT4
+         || '-'
+         || GCC.SEGMENT5
+         || '-'
+         || GCC.SEGMENT6
+         || '-'
+         || GCC.SEGMENT7
+            "CONTABILIDADE - FA"
+    FROM FA.FA_ASSET_INVOICES FAI,
+         FA.FA_TRANSACTION_HEADERS FTH,
+         XLA.XLA_AE_HEADERS XAH,
+         XLA.XLA_AE_LINES XAL,
+         GL.GL_CODE_COMBINATIONS GCC
+   WHERE     FTH.INVOICE_TRANSACTION_ID = FAI.INVOICE_TRANSACTION_ID_IN
+         AND FTH.ASSET_ID = FAI.ASSET_ID
+         AND FTH.EVENT_ID = XAH.EVENT_ID
+         AND XAH.AE_HEADER_ID = XAL.AE_HEADER_ID
+         AND XAL.CODE_COMBINATION_ID = GCC.CODE_COMBINATION_ID
+         AND FAI.INVOICE_ID IS NOT NULL
+         AND FAI.DATE_INEFFECTIVE IS NULL
+         -- AND FTH.BOOK_TYPE_CODE = 'BRPPG FISCAL'
+         AND FTH.EVENT_ID IS NOT NULL
+         AND XAL.APPLICATION_ID = 140
+         AND XAL.GL_SL_LINK_ID IS NOT NULL
+--AND XAH.PERIOD_NAME = '02-15'
+ORDER BY XAH.PERIOD_NAME,
+         TO_CHAR (XAL.ACCOUNTING_DATE, 'DD/MM/YYYY'),
+         1,
+         2,
+         XAL.AE_LINE_NUM

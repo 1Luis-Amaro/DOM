@@ -1,0 +1,5 @@
+O que são packages em SQL?
+Packages é um componente muito importante do Oracle Database. 
+Com ele podemos agrupar funções, procedures, variáveis, tipos de dados e etc,
+ como componentes em uma biblioteca armazenada no banco, onde vários usuários poderão ter 
+acesso e se beneficiar de tudo que tem no package.

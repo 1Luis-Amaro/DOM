@@ -1,0 +1,10 @@
+let PrecoLitroCombustivel = 4
+let KmCarro = 9 
+let Viagem = 100
+let LitrosConsumidos = Viagem / KmCarro
+let Total = LitrosConsumidos * PrecoLitroCombustivel 
+
+console.log("Combustivel", PrecoLitroCombustivel);
+console.log("Km por litro", KmCarro);
+console.log("Litros consumidos", LitrosConsumidos);
+console.log("Total gasto na viagem", Total.toFixed(2)); //toFixed arredonda o numero conforme numero que você coloca no parenteses

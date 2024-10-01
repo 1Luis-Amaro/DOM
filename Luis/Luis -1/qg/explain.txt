@@ -1,0 +1,495 @@
+﻿<ExplainPlan>
+  <PlanElement id="0" operation="SELECT STATEMENT" optimizer="ALL_ROWS" cost="8.548" cardinality="4.106" bytes="3.747.967" cpu_cost="412.803.245" io_cost="8.498" time="1">
+    <PlanElements>
+      <PlanElement id="1" operation="TEMP TABLE TRANSFORMATION" qblock_name="SET$2">
+        <PlanElements>
+          <PlanElement id="2" operation="LOAD AS SELECT" object_name="SYS_TEMP_0FD9D6672_7DDC207A" qblock_name="SEL$20">
+            <PlanElements>
+              <PlanElement object_ID="0" id="3" operation="VIEW" object_owner="APPS" object_name="MTL_CROSS_REFERENCES_V" object_type="VIEW" object_instance="2" cost="1.066" cardinality="263" bytes="6.838" cpu_cost="36.232.103" io_cost="1.062" qblock_name="SET$1" time="1">
+                <PlanElements>
+                  <PlanElement id="4" operation="UNION-ALL" qblock_name="SET$1">
+                    <PlanElements>
+                      <PlanElement id="5" operation="NESTED LOOPS" cost="42" cardinality="1" bytes="316" cpu_cost="3.181.512" io_cost="42" qblock_name="SEL$136A8AB3" time="1">
+                        <PlanElements>
+                          <PlanElement id="6" operation="NESTED LOOPS" cost="42" cardinality="1" bytes="316" cpu_cost="3.181.512" io_cost="42" time="1">
+                            <PlanElements>
+                              <PlanElement id="7" operation="NESTED LOOPS" cost="40" cardinality="1" bytes="267" cpu_cost="3.165.139" io_cost="40" time="1">
+                                <PlanElements>
+                                  <PlanElement id="8" operation="NESTED LOOPS" option="OUTER" cost="39" cardinality="1" bytes="245" cpu_cost="3.155.667" io_cost="39" time="1">
+                                    <PlanElements>
+                                      <PlanElement id="9" operation="NESTED LOOPS" cost="39" cardinality="1" bytes="227" cpu_cost="3.153.767" io_cost="39" time="1">
+                                        <PlanElements>
+                                          <PlanElement id="10" operation="NESTED LOOPS" option="OUTER" cost="38" cardinality="1" bytes="185" cpu_cost="3.144.536" io_cost="38" time="1">
+                                            <PlanElements>
+                                              <PlanElement id="11" operation="HASH JOIN" cost="38" cardinality="1" bytes="168" cpu_cost="3.143.486" io_cost="38" access_predicates="&quot;BASE&quot;.&quot;ORGANIZATION_ID&quot;=&quot;HAO&quot;.&quot;ORGANIZATION_ID&quot;" time="1">
+                                                <PlanElements>
+                                                  <PlanElement id="12" operation="NESTED LOOPS" cost="8" cardinality="1" bytes="92" cpu_cost="85.837" io_cost="8" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="13" operation="NESTED LOOPS" cost="8" cardinality="1" bytes="92" cpu_cost="85.837" io_cost="8" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="14" operation="NESTED LOOPS" cost="7" cardinality="1" bytes="84" cpu_cost="77.396" io_cost="7" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement id="15" operation="NESTED LOOPS" cost="6" cardinality="1" bytes="76" cpu_cost="67.025" io_cost="6" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement id="16" operation="NESTED LOOPS" cost="5" cardinality="1" bytes="52" cpu_cost="51.672" io_cost="5" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement id="17" operation="NESTED LOOPS" cost="3" cardinality="1" bytes="24" cpu_cost="35.594" io_cost="3" time="1">
+                                                                        <PlanElements>
+                                                                          <PlanElement object_ID="1" id="18" operation="TABLE ACCESS" option="BY INDEX ROWID BATCHED" optimizer="ANALYZED" object_owner="HR" object_name="HR_ALL_ORGANIZATION_UNITS_TL" object_type="TABLE" object_instance="57" cost="2" cardinality="1" bytes="18" cpu_cost="20.953" io_cost="2" qblock_name="SEL$136A8AB3" time="1">
+                                                                            <PlanElements>
+                                                                              <PlanElement object_ID="2" id="19" operation="INDEX" option="SKIP SCAN" optimizer="ANALYZED" object_owner="HR" object_name="HR_ALL_ORGANIZATION_UNTS_TL_PK" object_type="INDEX (UNIQUE)" search_columns="1" cost="1" cardinality="1" cpu_cost="13.621" io_cost="1" qblock_name="SEL$136A8AB3" access_predicates="&quot;HAOTL&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;HAOTL&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND DECODE(&quot;HR_SECURITY&quot;.&quot;VIEW_ALL&quot;(),'Y','TRUE',&quot;HR_SECURITY&quot;.&quot;SHOW_RECORD&quot;('HR_ALL_ORGANIZATION_UNITS',&quot;HAOTL&quot;.&quot;ORGANIZATION_ID&quot;))='TRUE'" time="1"/>
+                                                                            </PlanElements>
+                                                                          </PlanElement>
+                                                                          <PlanElement object_ID="3" id="20" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="HR" object_name="HR_ALL_ORGANIZATION_UNITS" object_type="TABLE" object_instance="56" cost="1" cardinality="1" bytes="6" cpu_cost="14.641" io_cost="1" qblock_name="SEL$136A8AB3" filter_predicates="&quot;HAO&quot;.&quot;BUSINESS_GROUP_ID&quot;=DECODE(&quot;HR_GENERAL&quot;.&quot;GET_XBG_PROFILE&quot;(),'Y',&quot;HAO&quot;.&quot;BUSINESS_GROUP_ID&quot;,&quot;HR_GENERAL&quot;.&quot;GET_BUSINESS_GROUP_ID&quot;())" time="1">
+                                                                            <PlanElements>
+                                                                              <PlanElement object_ID="4" id="21" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="HR" object_name="HR_ORGANIZATION_UNITS_PK" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;HAO&quot;.&quot;ORGANIZATION_ID&quot;=&quot;HAOTL&quot;.&quot;ORGANIZATION_ID&quot;" time="1"/>
+                                                                            </PlanElements>
+                                                                          </PlanElement>
+                                                                        </PlanElements>
+                                                                      </PlanElement>
+                                                                      <PlanElement object_ID="5" id="22" operation="TABLE ACCESS" option="BY INDEX ROWID BATCHED" optimizer="ANALYZED" object_owner="HR" object_name="HR_ORGANIZATION_INFORMATION" object_type="TABLE" object_instance="52" cost="2" cardinality="1" bytes="28" cpu_cost="16.077" io_cost="2" qblock_name="SEL$136A8AB3" filter_predicates="&quot;HOI1&quot;.&quot;ORG_INFORMATION1&quot;='INV' AND &quot;HOI1&quot;.&quot;ORG_INFORMATION2&quot;='Y'" time="1">
+                                                                        <PlanElements>
+                                                                          <PlanElement object_ID="6" id="23" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="HR" object_name="HR_ORGANIZATION_INFORMATIO_FK2" object_type="INDEX" search_columns="1" cost="1" cardinality="1" cpu_cost="8.021" io_cost="1" qblock_name="SEL$136A8AB3" access_predicates="&quot;HAO&quot;.&quot;ORGANIZATION_ID&quot;=&quot;HOI1&quot;.&quot;ORGANIZATION_ID&quot;" filter_predicates="&quot;HOI1&quot;.&quot;ORG_INFORMATION_CONTEXT&quot;||''='CLASS'" time="1"/>
+                                                                        </PlanElements>
+                                                                      </PlanElement>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                  <PlanElement object_ID="5" id="24" operation="TABLE ACCESS" option="BY INDEX ROWID BATCHED" optimizer="ANALYZED" object_owner="HR" object_name="HR_ORGANIZATION_INFORMATION" object_type="TABLE" object_instance="53" cost="1" cardinality="1" bytes="24" cpu_cost="15.353" io_cost="1" qblock_name="SEL$136A8AB3" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement object_ID="6" id="25" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="HR" object_name="HR_ORGANIZATION_INFORMATIO_FK2" object_type="INDEX" search_columns="1" cost="1" cardinality="1" cpu_cost="8.021" io_cost="1" qblock_name="SEL$136A8AB3" access_predicates="&quot;HAO&quot;.&quot;ORGANIZATION_ID&quot;=&quot;HOI2&quot;.&quot;ORGANIZATION_ID&quot;" filter_predicates="&quot;HOI2&quot;.&quot;ORG_INFORMATION_CONTEXT&quot;||''='Accounting Information'" time="1"/>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement object_ID="7" id="26" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="GL" object_name="GL_LEDGERS" object_type="TABLE" object_instance="55" cost="1" cardinality="1" bytes="8" cpu_cost="10.371" io_cost="1" qblock_name="SEL$136A8AB3" filter_predicates="&quot;LGR&quot;.&quot;OBJECT_TYPE_CODE&quot;='L' AND NVL(&quot;LGR&quot;.&quot;COMPLETE_FLAG&quot;,'Y')='Y'" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="8" id="27" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="GL" object_name="GL_LEDGERS_U2" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;LGR&quot;.&quot;LEDGER_ID&quot;=TO_NUMBER(DECODE(RTRIM(TRANSLATE(&quot;HOI2&quot;.&quot;ORG_INFORMATION1&quot;,'0123456789',' ')),NULL,&quot;HOI2&quot;.&quot;ORG_INFORMATION1&quot;,'-99999'))" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement object_ID="9" id="28" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_PARAMETERS_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;HAO&quot;.&quot;ORGANIZATION_ID&quot;=&quot;MP&quot;.&quot;ORGANIZATION_ID&quot;" time="1"/>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                      <PlanElement object_ID="10" id="29" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_PARAMETERS" object_type="TABLE" object_instance="54" cost="1" cardinality="1" bytes="8" cpu_cost="8.441" io_cost="1" qblock_name="SEL$136A8AB3" time="1"/>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                  <PlanElement object_ID="11" id="30" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CROSS_REFERENCES_B" object_type="TABLE" object_instance="58" cost="30" cardinality="225" bytes="17.100" cpu_cost="2.434.998" io_cost="30" qblock_name="SEL$136A8AB3" filter_predicates="&quot;BASE&quot;.&quot;ORGANIZATION_ID&quot; IS NOT NULL AND &quot;BASE&quot;.&quot;CROSS_REFERENCE_TYPE&quot;='ITEM.REF'" time="1"/>
+                                                </PlanElements>
+                                              </PlanElement>
+                                              <PlanElement object_ID="12" id="31" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_UNITS_OF_MEASURE_TL" object_type="TABLE" object_instance="44" cost="0" cardinality="1" bytes="17" cpu_cost="1.050" io_cost="0" qblock_name="SEL$136A8AB3" time="1">
+                                                <PlanElements>
+                                                  <PlanElement object_ID="13" id="32" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_UNITS_OF_MEASURE_TL_U2" object_type="INDEX (UNIQUE)" search_columns="2" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;BASE&quot;.&quot;UOM_CODE&quot;=&quot;UOM&quot;.&quot;UOM_CODE&quot;(+) AND &quot;UOM&quot;.&quot;LANGUAGE&quot;(+)=USERENV('LANG')" time="1"/>
+                                                </PlanElements>
+                                              </PlanElement>
+                                            </PlanElements>
+                                          </PlanElement>
+                                          <PlanElement object_ID="14" id="33" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CROSS_REFERENCES_TL" object_type="TABLE" object_instance="59" cost="1" cardinality="1" bytes="42" cpu_cost="9.231" io_cost="1" qblock_name="SEL$136A8AB3" time="1">
+                                            <PlanElements>
+                                              <PlanElement object_ID="15" id="34" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CROSS_REFERENCES_TL_U1" object_type="INDEX (UNIQUE)" search_columns="2" cost="0" cardinality="1" cpu_cost="1.900" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;BASE&quot;.&quot;CROSS_REFERENCE_ID&quot;=&quot;TL&quot;.&quot;CROSS_REFERENCE_ID&quot; AND &quot;TL&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                            </PlanElements>
+                                          </PlanElement>
+                                        </PlanElements>
+                                      </PlanElement>
+                                      <PlanElement object_ID="16" id="35" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_REVISIONS_B" object_type="TABLE" object_instance="45" cost="0" cardinality="1" bytes="18" cpu_cost="1.900" io_cost="0" qblock_name="SEL$136A8AB3" filter_predicates="&quot;BASE&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;REV&quot;.&quot;INVENTORY_ITEM_ID&quot;(+) AND &quot;BASE&quot;.&quot;ORGANIZATION_ID&quot;=&quot;REV&quot;.&quot;ORGANIZATION_ID&quot;(+)" time="1">
+                                        <PlanElements>
+                                          <PlanElement object_ID="17" id="36" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_REVISIONS_B_U2" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.900" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;BASE&quot;.&quot;REVISION_ID&quot;=&quot;REV&quot;.&quot;REVISION_ID&quot;(+)" time="1"/>
+                                        </PlanElements>
+                                      </PlanElement>
+                                    </PlanElements>
+                                  </PlanElement>
+                                  <PlanElement object_ID="18" id="37" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_B" object_type="TABLE" object_instance="50" cost="1" cardinality="1" bytes="22" cpu_cost="9.471" io_cost="1" qblock_name="SEL$136A8AB3" time="1">
+                                    <PlanElements>
+                                      <PlanElement object_ID="19" id="38" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_B_U1" object_type="INDEX (UNIQUE)" search_columns="2" cost="0" cardinality="1" cpu_cost="1.900" io_cost="0" qblock_name="SEL$136A8AB3" access_predicates="&quot;BASE&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;INVENTORY_ITEM_ID&quot; AND &quot;BASE&quot;.&quot;ORGANIZATION_ID&quot;=&quot;ORGANIZATION_ID&quot;" time="1"/>
+                                    </PlanElements>
+                                  </PlanElement>
+                                </PlanElements>
+                              </PlanElement>
+                              <PlanElement object_ID="20" id="39" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_TL_U1" object_type="INDEX (UNIQUE)" search_columns="3" cost="1" cardinality="1" cpu_cost="9.021" io_cost="1" qblock_name="SEL$136A8AB3" access_predicates="&quot;MSB_TL&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;INVENTORY_ITEM_ID&quot; AND &quot;MSB_TL&quot;.&quot;ORGANIZATION_ID&quot;=&quot;ORGANIZATION_ID&quot; AND &quot;MSB_TL&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                            </PlanElements>
+                          </PlanElement>
+                          <PlanElement object_ID="21" id="40" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_TL" object_type="TABLE" object_instance="43" cost="2" cardinality="1" bytes="49" cpu_cost="16.373" io_cost="2" qblock_name="SEL$136A8AB3" time="1"/>
+                        </PlanElements>
+                      </PlanElement>
+                      <PlanElement id="41" operation="HASH" option="UNIQUE" cost="1.024" cardinality="262" bytes="42.968" cpu_cost="33.050.591" io_cost="1.020" qblock_name="SEL$CB900F89" time="1">
+                        <PlanElements>
+                          <PlanElement id="42" operation="HASH JOIN" cost="1.023" cardinality="262" bytes="42.968" cpu_cost="24.709.754" io_cost="1.020" access_predicates="&quot;BASE&quot;.&quot;CROSS_REFERENCE_ID&quot;=&quot;TL&quot;.&quot;CROSS_REFERENCE_ID&quot;" time="1">
+                            <PlanElements>
+                              <PlanElement id="43" operation="NESTED LOOPS" cost="979" cardinality="184" bytes="22.448" cpu_cost="12.149.988" io_cost="978" time="1">
+                                <PlanElements>
+                                  <PlanElement id="44" operation="NESTED LOOPS" cost="979" cardinality="943" bytes="22.448" cpu_cost="12.149.988" io_cost="978" time="1">
+                                    <PlanElements>
+                                      <PlanElement id="45" operation="NESTED LOOPS" option="OUTER" cost="35" cardinality="943" bytes="94.300" cpu_cost="3.218.420" io_cost="35" time="1">
+                                        <PlanElements>
+                                          <PlanElement id="46" operation="MERGE JOIN" option="CARTESIAN" cost="35" cardinality="943" bytes="78.269" cpu_cost="3.217.370" io_cost="35" time="1">
+                                            <PlanElements>
+                                              <PlanElement object_ID="10" id="47" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_PARAMETERS" object_type="TABLE" object_instance="49" cost="5" cardinality="1" bytes="7" cpu_cost="99.379" io_cost="5" qblock_name="SEL$CB900F89" filter_predicates="&quot;MP&quot;.&quot;MASTER_ORGANIZATION_ID&quot;=&quot;MP&quot;.&quot;ORGANIZATION_ID&quot;" time="1"/>
+                                              <PlanElement id="48" operation="BUFFER" option="SORT" cost="30" cardinality="943" bytes="71.668" cpu_cost="3.117.992" io_cost="30" time="1">
+                                                <PlanElements>
+                                                  <PlanElement object_ID="11" id="49" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CROSS_REFERENCES_B" object_type="TABLE" object_instance="61" cost="30" cardinality="943" bytes="71.668" cpu_cost="3.117.992" io_cost="30" qblock_name="SEL$CB900F89" filter_predicates="&quot;BASE&quot;.&quot;CROSS_REFERENCE_TYPE&quot;='ITEM.REF' AND &quot;BASE&quot;.&quot;ORGANIZATION_ID&quot; IS NULL" time="1"/>
+                                                </PlanElements>
+                                              </PlanElement>
+                                            </PlanElements>
+                                          </PlanElement>
+                                          <PlanElement object_ID="12" id="50" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_UNITS_OF_MEASURE_TL" object_type="TABLE" object_instance="48" cost="0" cardinality="1" bytes="17" cpu_cost="1.050" io_cost="0" qblock_name="SEL$CB900F89" time="1">
+                                            <PlanElements>
+                                              <PlanElement object_ID="13" id="51" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_UNITS_OF_MEASURE_TL_U2" object_type="INDEX (UNIQUE)" search_columns="2" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$CB900F89" access_predicates="&quot;BASE&quot;.&quot;UOM_CODE&quot;=&quot;UOM&quot;.&quot;UOM_CODE&quot;(+) AND &quot;UOM&quot;.&quot;LANGUAGE&quot;(+)=USERENV('LANG')" time="1"/>
+                                            </PlanElements>
+                                          </PlanElement>
+                                        </PlanElements>
+                                      </PlanElement>
+                                      <PlanElement object_ID="19" id="52" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_B_U1" object_type="INDEX (UNIQUE)" search_columns="2" cost="0" cardinality="1" cpu_cost="1.900" io_cost="0" qblock_name="SEL$CB900F89" access_predicates="&quot;BASE&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;INVENTORY_ITEM_ID&quot; AND &quot;MP&quot;.&quot;MASTER_ORGANIZATION_ID&quot;=&quot;ORGANIZATION_ID&quot;" time="1"/>
+                                    </PlanElements>
+                                  </PlanElement>
+                                  <PlanElement object_ID="18" id="53" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_B" object_type="TABLE" object_instance="60" cost="1" cardinality="1" bytes="22" cpu_cost="9.471" io_cost="1" qblock_name="SEL$CB900F89" time="1"/>
+                                </PlanElements>
+                              </PlanElement>
+                              <PlanElement object_ID="14" id="54" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CROSS_REFERENCES_TL" object_type="TABLE" object_instance="62" cost="43" cardinality="7.009" bytes="294.378" cpu_cost="11.231.266" io_cost="42" qblock_name="SEL$CB900F89" filter_predicates="&quot;TL&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                            </PlanElements>
+                          </PlanElement>
+                        </PlanElements>
+                      </PlanElement>
+                    </PlanElements>
+                  </PlanElement>
+                </PlanElements>
+              </PlanElement>
+            </PlanElements>
+          </PlanElement>
+          <PlanElement id="55" operation="SORT" option="UNIQUE" cost="8.548" cardinality="4.106" bytes="3.747.967" cpu_cost="412.803.245" io_cost="8.498" temp_space="4.219.000" time="1">
+            <PlanElements>
+              <PlanElement id="56" operation="UNION-ALL">
+                <PlanElements>
+                  <PlanElement id="57" operation="HASH JOIN" option="RIGHT OUTER" cost="7.746" cardinality="4.105" bytes="3.747.865" cpu_cost="381.215.938" io_cost="7.700" qblock_name="SEL$D54FFF24" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;API2&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                    <PlanElements>
+                      <PlanElement id="58" operation="VIEW" object_owner="APPS" object_instance="17" cost="3" cardinality="263" bytes="37.346" cpu_cost="92.699" io_cost="3" qblock_name="SEL$89E9978D" time="1">
+                        <PlanElements>
+                          <PlanElement object_ID="22" id="59" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="SYS" object_name="SYS_TEMP_0FD9D6672_7DDC207A" object_type="TABLE (TEMP)" object_instance="508" cost="3" cardinality="263" bytes="6.838" cpu_cost="92.699" io_cost="3" qblock_name="SEL$89E9978D" time="1"/>
+                        </PlanElements>
+                      </PlanElement>
+                      <PlanElement id="60" operation="FILTER" filter_predicates="GREATEST(&quot;IB&quot;.&quot;LAST_UPDATE_DATE&quot;,NVL(&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;PC&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;BR&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;PCAT&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;PHIER&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;PTYPE&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;PFAM&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;OUM&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;API&quot;.&quot;LAST_UPDATE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')),NVL(&quot;TRACE&quot;.&quot;CREATED_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')))&gt;CURRENT_DATE-100">
+                        <PlanElements>
+                          <PlanElement id="61" operation="HASH JOIN" option="RIGHT OUTER" cost="7.743" cardinality="4.105" bytes="3.164.955" cpu_cost="380.073.289" io_cost="7.697" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;API&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                            <PlanElements>
+                              <PlanElement id="62" operation="VIEW" object_owner="APPS" object_instance="15" cost="3" cardinality="263" bytes="5.786" cpu_cost="92.699" io_cost="3" qblock_name="SEL$89E9978C" time="1">
+                                <PlanElements>
+                                  <PlanElement object_ID="22" id="63" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="SYS" object_name="SYS_TEMP_0FD9D6672_7DDC207A" object_type="TABLE (TEMP)" object_instance="507" cost="3" cardinality="263" bytes="6.838" cpu_cost="92.699" io_cost="3" qblock_name="SEL$89E9978C" time="1"/>
+                                </PlanElements>
+                              </PlanElement>
+                              <PlanElement id="64" operation="HASH JOIN" option="RIGHT OUTER" cost="7.740" cardinality="4.105" bytes="3.074.645" cpu_cost="378.930.641" io_cost="7.694" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;PC&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                <PlanElements>
+                                  <PlanElement id="65" operation="VIEW" object_owner="APPS" object_instance="23" cost="500" cardinality="357" bytes="15.708" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$1BBFCEC3" time="1">
+                                    <PlanElements>
+                                      <PlanElement id="66" operation="HASH JOIN" cost="500" cardinality="357" bytes="43.197" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$1BBFCEC3" access_predicates="&quot;MIC&quot;.&quot;CATEGORY_ID&quot;=&quot;CATEGORY_ID&quot;" time="1">
+                                        <PlanElements>
+                                          <PlanElement id="67" operation="NESTED LOOPS" cost="404" cardinality="357" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                            <PlanElements>
+                                              <PlanElement id="68" operation="NESTED LOOPS" cost="404" cardinality="1.273" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                <PlanElements>
+                                                  <PlanElement id="69" operation="NESTED LOOPS" cost="9" cardinality="1" bytes="78" cpu_cost="175.999" io_cost="9" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="70" operation="NESTED LOOPS" cost="7" cardinality="1" bytes="40" cpu_cost="159.689" io_cost="7" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement object_ID="23" id="71" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_TL" object_type="TABLE" object_instance="64" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" qblock_name="SEL$1BBFCEC3" filter_predicates="&quot;MCST&quot;.&quot;CATEGORY_SET_NAME&quot;='SEMI ELABORADO' AND &quot;MCST&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                          <PlanElement object_ID="24" id="72" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B" object_type="TABLE" object_instance="65" cost="1" cardinality="1" bytes="10" cpu_cost="8.381" io_cost="1" qblock_name="SEL$1BBFCEC3" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement object_ID="25" id="73" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$1BBFCEC3" access_predicates="&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCST&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                      <PlanElement object_ID="26" id="74" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.310" io_cost="2" qblock_name="SEL$1BBFCEC3" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;='ITEM_CONTROL_LEVEL_GUI' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;MCS&quot;.&quot;CONTROL_LEVEL&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;) AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0" time="1"/>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                  <PlanElement object_ID="27" id="75" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES_N1" object_type="INDEX" search_columns="2" cost="8" cardinality="1.273" cpu_cost="302.022" io_cost="8" qblock_name="SEL$1BBFCEC3" access_predicates="&quot;MIC&quot;.&quot;ORGANIZATION_ID&quot;=87 AND &quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                </PlanElements>
+                                              </PlanElement>
+                                              <PlanElement object_ID="28" id="76" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES" object_type="TABLE" object_instance="63" cost="395" cardinality="1.273" bytes="36.917" cpu_cost="3.338.849" io_cost="395" qblock_name="SEL$1BBFCEC3" time="1"/>
+                                            </PlanElements>
+                                          </PlanElement>
+                                          <PlanElement object_ID="29" id="77" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORIES_B" object_type="TABLE" object_instance="68" cost="95" cardinality="20.513" bytes="287.182" cpu_cost="7.153.522" io_cost="94" qblock_name="SEL$1BBFCEC3" time="1"/>
+                                        </PlanElements>
+                                      </PlanElement>
+                                    </PlanElements>
+                                  </PlanElement>
+                                  <PlanElement id="78" operation="HASH JOIN" option="RIGHT OUTER" cost="7.240" cardinality="4.105" bytes="2.894.025" cpu_cost="364.493.370" io_cost="7.196" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;BR&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                    <PlanElements>
+                                      <PlanElement id="79" operation="VIEW" object_owner="APPS" object_instance="25" cost="500" cardinality="357" bytes="15.708" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$9B9BAABA" time="1">
+                                        <PlanElements>
+                                          <PlanElement id="80" operation="HASH JOIN" cost="500" cardinality="357" bytes="43.197" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$9B9BAABA" access_predicates="&quot;MIC&quot;.&quot;CATEGORY_ID&quot;=&quot;CATEGORY_ID&quot;" time="1">
+                                            <PlanElements>
+                                              <PlanElement id="81" operation="NESTED LOOPS" cost="404" cardinality="357" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                <PlanElements>
+                                                  <PlanElement id="82" operation="NESTED LOOPS" cost="404" cardinality="1.273" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="83" operation="NESTED LOOPS" cost="9" cardinality="1" bytes="78" cpu_cost="175.999" io_cost="9" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="84" operation="NESTED LOOPS" cost="7" cardinality="1" bytes="40" cpu_cost="159.689" io_cost="7" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement object_ID="23" id="85" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_TL" object_type="TABLE" object_instance="71" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" qblock_name="SEL$9B9BAABA" filter_predicates="&quot;MCST&quot;.&quot;CATEGORY_SET_NAME&quot;='PPG_BR_PRODUCT_FAMILY' AND &quot;MCST&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                              <PlanElement object_ID="24" id="86" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B" object_type="TABLE" object_instance="72" cost="1" cardinality="1" bytes="10" cpu_cost="8.381" io_cost="1" qblock_name="SEL$9B9BAABA" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="25" id="87" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$9B9BAABA" access_predicates="&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCST&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement object_ID="26" id="88" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.310" io_cost="2" qblock_name="SEL$9B9BAABA" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;='ITEM_CONTROL_LEVEL_GUI' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;MCS&quot;.&quot;CONTROL_LEVEL&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;) AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0" time="1"/>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                      <PlanElement object_ID="27" id="89" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES_N1" object_type="INDEX" search_columns="2" cost="8" cardinality="1.273" cpu_cost="302.022" io_cost="8" qblock_name="SEL$9B9BAABA" access_predicates="&quot;MIC&quot;.&quot;ORGANIZATION_ID&quot;=87 AND &quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                  <PlanElement object_ID="28" id="90" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES" object_type="TABLE" object_instance="70" cost="395" cardinality="1.273" bytes="36.917" cpu_cost="3.338.849" io_cost="395" qblock_name="SEL$9B9BAABA" time="1"/>
+                                                </PlanElements>
+                                              </PlanElement>
+                                              <PlanElement object_ID="29" id="91" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORIES_B" object_type="TABLE" object_instance="75" cost="95" cardinality="20.513" bytes="287.182" cpu_cost="7.153.522" io_cost="94" qblock_name="SEL$9B9BAABA" time="1"/>
+                                            </PlanElements>
+                                          </PlanElement>
+                                        </PlanElements>
+                                      </PlanElement>
+                                      <PlanElement id="92" operation="HASH JOIN" option="RIGHT OUTER" cost="6.740" cardinality="4.105" bytes="2.713.405" cpu_cost="350.056.100" io_cost="6.698" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;PCAT&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                        <PlanElements>
+                                          <PlanElement id="93" operation="VIEW" object_owner="APPS" object_instance="27" cost="362" cardinality="357" bytes="59.262" cpu_cost="23.478.748" io_cost="359" qblock_name="SEL$8297980D" time="1">
+                                            <PlanElements>
+                                              <PlanElement id="94" operation="HASH JOIN" option="RIGHT OUTER" cost="362" cardinality="357" bytes="118.167" cpu_cost="23.478.748" io_cost="359" qblock_name="SEL$8297980D" access_predicates="&quot;SEGMENT3&quot;=&quot;FVV&quot;.&quot;FLEX_VALUE&quot;(+)" time="1">
+                                                <PlanElements>
+                                                  <PlanElement object_ID="30" id="95" operation="VIEW" object_owner="APPS" object_name="FND_FLEX_VALUES_VL" object_type="VIEW" object_instance="8" cost="26" cardinality="33" bytes="7.293" cpu_cost="244.458" io_cost="26" qblock_name="SEL$17" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="96" operation="NESTED LOOPS" cost="26" cardinality="33" bytes="1.518" cpu_cost="244.458" io_cost="26" qblock_name="SEL$17" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="97" operation="NESTED LOOPS" cost="26" cardinality="33" bytes="1.518" cpu_cost="244.458" io_cost="26" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement object_ID="31" id="98" operation="TABLE ACCESS" option="BY INDEX ROWID BATCHED" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_FLEX_VALUES" object_type="TABLE" object_instance="78" cost="3" cardinality="23" bytes="621" cpu_cost="31.204" io_cost="3" qblock_name="SEL$17" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="32" id="99" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_FLEX_VALUES_N2" object_type="INDEX" search_columns="1" cost="2" cardinality="23" cpu_cost="19.043" io_cost="2" qblock_name="SEL$17" access_predicates="&quot;B&quot;.&quot;FLEX_VALUE_SET_ID&quot;=1016123" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement object_ID="33" id="100" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_FLEX_VALUES_TL_U1" object_type="INDEX (UNIQUE)" search_columns="2" cost="0" cardinality="1" cpu_cost="1.900" io_cost="0" qblock_name="SEL$17" access_predicates="&quot;B&quot;.&quot;FLEX_VALUE_ID&quot;=&quot;T&quot;.&quot;FLEX_VALUE_ID&quot; AND &quot;T&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement object_ID="34" id="101" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_FLEX_VALUES_TL" object_type="TABLE" object_instance="77" cost="1" cardinality="1" bytes="19" cpu_cost="9.311" io_cost="1" qblock_name="SEL$17" time="1"/>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                  <PlanElement id="102" operation="HASH JOIN" cost="336" cardinality="357" bytes="39.270" cpu_cost="22.593.639" io_cost="333" access_predicates="&quot;MIC&quot;.&quot;CATEGORY_ID&quot;=&quot;CATEGORY_ID&quot;" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="103" operation="NESTED LOOPS" cost="240" cardinality="357" bytes="35.343" cpu_cost="11.914.747" io_cost="239" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="104" operation="NESTED LOOPS" cost="10" cardinality="1" bytes="78" cpu_cost="182.437" io_cost="10" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement id="105" operation="MERGE JOIN" option="CARTESIAN" cost="9" cardinality="1" bytes="68" cpu_cost="173.906" io_cost="9" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="26" id="106" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="3" cardinality="1" bytes="38" cpu_cost="22.598" io_cost="3" qblock_name="SEL$8297980D" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;='ITEM_CONTROL_LEVEL_GUI' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0" time="1"/>
+                                                                  <PlanElement id="107" operation="BUFFER" option="SORT" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement object_ID="23" id="108" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_TL" object_type="TABLE" object_instance="80" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" qblock_name="SEL$8297980D" filter_predicates="&quot;MCST&quot;.&quot;CATEGORY_SET_NAME&quot;='Inventory' AND &quot;MCST&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement object_ID="24" id="109" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B" object_type="TABLE" object_instance="81" cost="1" cardinality="1" bytes="10" cpu_cost="8.531" io_cost="1" qblock_name="SEL$8297980D" filter_predicates="&quot;MCS&quot;.&quot;CONTROL_LEVEL&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;)" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="25" id="110" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$8297980D" access_predicates="&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCST&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement object_ID="35" id="111" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES_U1" object_type="INDEX (UNIQUE)" search_columns="2" cost="230" cardinality="1.273" bytes="26.733" cpu_cost="11.732.310" io_cost="229" qblock_name="SEL$8297980D" access_predicates="&quot;MIC&quot;.&quot;ORGANIZATION_ID&quot;=87 AND &quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" filter_predicates="&quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                      <PlanElement object_ID="29" id="112" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORIES_B" object_type="TABLE" object_instance="84" cost="95" cardinality="20.513" bytes="225.643" cpu_cost="7.974.042" io_cost="94" qblock_name="SEL$8297980D" time="1"/>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                </PlanElements>
+                                              </PlanElement>
+                                            </PlanElements>
+                                          </PlanElement>
+                                          <PlanElement id="113" operation="HASH JOIN" option="RIGHT OUTER" cost="6.378" cardinality="4.105" bytes="2.031.975" cpu_cost="325.513.302" io_cost="6.339" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;PHIER&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                            <PlanElements>
+                                              <PlanElement id="114" operation="VIEW" object_owner="APPS" object_instance="29" cost="500" cardinality="357" bytes="74.256" cpu_cost="16.655.300" io_cost="498" qblock_name="SEL$73BE1115" time="1">
+                                                <PlanElements>
+                                                  <PlanElement id="115" operation="HASH JOIN" cost="500" cardinality="357" bytes="51.051" cpu_cost="16.655.300" io_cost="498" qblock_name="SEL$73BE1115" access_predicates="&quot;MIC&quot;.&quot;CATEGORY_ID&quot;=&quot;CATEGORY_ID&quot;" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="116" operation="NESTED LOOPS" cost="404" cardinality="357" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="117" operation="NESTED LOOPS" cost="404" cardinality="1.273" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement id="118" operation="NESTED LOOPS" cost="9" cardinality="1" bytes="78" cpu_cost="175.999" io_cost="9" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement id="119" operation="NESTED LOOPS" cost="7" cardinality="1" bytes="40" cpu_cost="159.689" io_cost="7" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement object_ID="23" id="120" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_TL" object_type="TABLE" object_instance="94" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" qblock_name="SEL$73BE1115" filter_predicates="&quot;MCST&quot;.&quot;CATEGORY_SET_NAME&quot;='PPG_BR_PRODUCT_FAMILY' AND &quot;MCST&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                                      <PlanElement object_ID="24" id="121" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B" object_type="TABLE" object_instance="95" cost="1" cardinality="1" bytes="10" cpu_cost="8.381" io_cost="1" qblock_name="SEL$73BE1115" time="1">
+                                                                        <PlanElements>
+                                                                          <PlanElement object_ID="25" id="122" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$73BE1115" access_predicates="&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCST&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                        </PlanElements>
+                                                                      </PlanElement>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                  <PlanElement object_ID="26" id="123" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.310" io_cost="2" qblock_name="SEL$73BE1115" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;='ITEM_CONTROL_LEVEL_GUI' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;MCS&quot;.&quot;CONTROL_LEVEL&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;) AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement object_ID="27" id="124" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES_N1" object_type="INDEX" search_columns="2" cost="8" cardinality="1.273" cpu_cost="302.022" io_cost="8" qblock_name="SEL$73BE1115" access_predicates="&quot;MIC&quot;.&quot;ORGANIZATION_ID&quot;=87 AND &quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement object_ID="28" id="125" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES" object_type="TABLE" object_instance="93" cost="395" cardinality="1.273" bytes="36.917" cpu_cost="3.338.849" io_cost="395" qblock_name="SEL$73BE1115" time="1"/>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                      <PlanElement object_ID="29" id="126" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORIES_B" object_type="TABLE" object_instance="98" cost="95" cardinality="20.513" bytes="738.468" cpu_cost="10.435.602" io_cost="94" qblock_name="SEL$73BE1115" time="1"/>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                </PlanElements>
+                                              </PlanElement>
+                                              <PlanElement id="127" operation="HASH JOIN" option="RIGHT OUTER" cost="5.878" cardinality="4.105" bytes="1.178.135" cpu_cost="307.793.952" io_cost="5.841" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;PTYPE&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                                <PlanElements>
+                                                  <PlanElement id="128" operation="VIEW" object_owner="APPS" object_instance="31" cost="500" cardinality="357" bytes="15.708" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$8ADF0DA1" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="129" operation="HASH JOIN" cost="500" cardinality="357" bytes="43.197" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$8ADF0DA1" access_predicates="&quot;MIC&quot;.&quot;CATEGORY_ID&quot;=&quot;CATEGORY_ID&quot;" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="130" operation="NESTED LOOPS" cost="404" cardinality="357" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement id="131" operation="NESTED LOOPS" cost="404" cardinality="1.273" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement id="132" operation="NESTED LOOPS" cost="9" cardinality="1" bytes="78" cpu_cost="175.999" io_cost="9" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement id="133" operation="NESTED LOOPS" cost="7" cardinality="1" bytes="40" cpu_cost="159.689" io_cost="7" time="1">
+                                                                        <PlanElements>
+                                                                          <PlanElement object_ID="23" id="134" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_TL" object_type="TABLE" object_instance="101" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" qblock_name="SEL$8ADF0DA1" filter_predicates="&quot;MCST&quot;.&quot;CATEGORY_SET_NAME&quot;='PPG_BR_COM_SEG_QUALITATIVO' AND &quot;MCST&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                                          <PlanElement object_ID="24" id="135" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B" object_type="TABLE" object_instance="102" cost="1" cardinality="1" bytes="10" cpu_cost="8.381" io_cost="1" qblock_name="SEL$8ADF0DA1" time="1">
+                                                                            <PlanElements>
+                                                                              <PlanElement object_ID="25" id="136" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$8ADF0DA1" access_predicates="&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCST&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                            </PlanElements>
+                                                                          </PlanElement>
+                                                                        </PlanElements>
+                                                                      </PlanElement>
+                                                                      <PlanElement object_ID="26" id="137" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.310" io_cost="2" qblock_name="SEL$8ADF0DA1" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;='ITEM_CONTROL_LEVEL_GUI' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;MCS&quot;.&quot;CONTROL_LEVEL&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;) AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0" time="1"/>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                  <PlanElement object_ID="27" id="138" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES_N1" object_type="INDEX" search_columns="2" cost="8" cardinality="1.273" cpu_cost="302.022" io_cost="8" qblock_name="SEL$8ADF0DA1" access_predicates="&quot;MIC&quot;.&quot;ORGANIZATION_ID&quot;=87 AND &quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement object_ID="28" id="139" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES" object_type="TABLE" object_instance="100" cost="395" cardinality="1.273" bytes="36.917" cpu_cost="3.338.849" io_cost="395" qblock_name="SEL$8ADF0DA1" time="1"/>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement object_ID="29" id="140" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORIES_B" object_type="TABLE" object_instance="105" cost="95" cardinality="20.513" bytes="287.182" cpu_cost="7.153.522" io_cost="94" qblock_name="SEL$8ADF0DA1" time="1"/>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                  <PlanElement id="141" operation="HASH JOIN" option="RIGHT OUTER" cost="5.379" cardinality="4.105" bytes="997.515" cpu_cost="293.356.682" io_cost="5.343" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;PFAM&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                                    <PlanElements>
+                                                      <PlanElement id="142" operation="VIEW" object_owner="APPS" object_instance="33" cost="500" cardinality="357" bytes="15.708" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$4A19B5B4" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="143" operation="HASH JOIN" cost="500" cardinality="357" bytes="43.197" cpu_cost="13.373.220" io_cost="498" qblock_name="SEL$4A19B5B4" access_predicates="&quot;MIC&quot;.&quot;CATEGORY_ID&quot;=&quot;CATEGORY_ID&quot;" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement id="144" operation="NESTED LOOPS" cost="404" cardinality="357" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement id="145" operation="NESTED LOOPS" cost="404" cardinality="1.273" bytes="38.199" cpu_cost="3.514.848" io_cost="404" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement id="146" operation="NESTED LOOPS" cost="9" cardinality="1" bytes="78" cpu_cost="175.999" io_cost="9" time="1">
+                                                                        <PlanElements>
+                                                                          <PlanElement id="147" operation="NESTED LOOPS" cost="7" cardinality="1" bytes="40" cpu_cost="159.689" io_cost="7" time="1">
+                                                                            <PlanElements>
+                                                                              <PlanElement object_ID="23" id="148" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_TL" object_type="TABLE" object_instance="87" cost="6" cardinality="1" bytes="30" cpu_cost="151.308" io_cost="6" qblock_name="SEL$4A19B5B4" filter_predicates="&quot;MCST&quot;.&quot;CATEGORY_SET_NAME&quot;='PPG_BR_COM_ACABAMENTO_BRILHO' AND &quot;MCST&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" time="1"/>
+                                                                              <PlanElement object_ID="24" id="149" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B" object_type="TABLE" object_instance="88" cost="1" cardinality="1" bytes="10" cpu_cost="8.381" io_cost="1" qblock_name="SEL$4A19B5B4" time="1">
+                                                                                <PlanElements>
+                                                                                  <PlanElement object_ID="25" id="150" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORY_SETS_B_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" cpu_cost="1.050" io_cost="0" qblock_name="SEL$4A19B5B4" access_predicates="&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCST&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                                </PlanElements>
+                                                                              </PlanElement>
+                                                                            </PlanElements>
+                                                                          </PlanElement>
+                                                                          <PlanElement object_ID="26" id="151" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.310" io_cost="2" qblock_name="SEL$4A19B5B4" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;='ITEM_CONTROL_LEVEL_GUI' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG')" filter_predicates="&quot;MCS&quot;.&quot;CONTROL_LEVEL&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;) AND &quot;LV&quot;.&quot;LANGUAGE&quot;=USERENV('LANG') AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;=0" time="1"/>
+                                                                        </PlanElements>
+                                                                      </PlanElement>
+                                                                      <PlanElement object_ID="27" id="152" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES_N1" object_type="INDEX" search_columns="2" cost="8" cardinality="1.273" cpu_cost="302.022" io_cost="8" qblock_name="SEL$4A19B5B4" access_predicates="&quot;MIC&quot;.&quot;ORGANIZATION_ID&quot;=87 AND &quot;MIC&quot;.&quot;CATEGORY_SET_ID&quot;=&quot;MCS&quot;.&quot;CATEGORY_SET_ID&quot;" time="1"/>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                  <PlanElement object_ID="28" id="153" operation="TABLE ACCESS" option="BY INDEX ROWID" optimizer="ANALYZED" object_owner="INV" object_name="MTL_ITEM_CATEGORIES" object_type="TABLE" object_instance="86" cost="395" cardinality="1.273" bytes="36.917" cpu_cost="3.338.849" io_cost="395" qblock_name="SEL$4A19B5B4" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement object_ID="29" id="154" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_CATEGORIES_B" object_type="TABLE" object_instance="91" cost="95" cardinality="20.513" bytes="287.182" cpu_cost="7.153.522" io_cost="94" qblock_name="SEL$4A19B5B4" time="1"/>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                      <PlanElement id="155" operation="HASH JOIN" option="RIGHT OUTER" cost="4.879" cardinality="4.105" bytes="816.895" cpu_cost="278.919.411" io_cost="4.845" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;TRACE&quot;.&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                                        <PlanElements>
+                                                          <PlanElement id="156" operation="VIEW" object_owner="APPS" object_instance="37" cost="4" cardinality="1" bytes="22" cpu_cost="8.283.435" io_cost="3" qblock_name="SEL$19" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement id="157" operation="HASH" option="GROUP BY" cost="4" cardinality="1" bytes="18" cpu_cost="8.283.435" io_cost="3" qblock_name="SEL$19" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="36" id="158" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="XXINV" object_name="XXINV_ITEM_CAT_REF_TRACE" object_type="TABLE" object_instance="1" cost="3" cardinality="1" bytes="18" cpu_cost="37.427" io_cost="3" qblock_name="SEL$19" filter_predicates="&quot;ORGANIZATION_ID&quot;=87" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                          <PlanElement id="159" operation="HASH JOIN" option="RIGHT OUTER" cost="4.875" cardinality="4.105" bytes="726.585" cpu_cost="269.625.326" io_cost="4.842" access_predicates="&quot;IB&quot;.&quot;ITEM_TYPE&quot;=&quot;LOOKUP_CODE&quot;(+)" time="1">
+                                                            <PlanElements>
+                                                              <PlanElement object_ID="37" id="160" operation="TABLE ACCESS" option="BY INDEX ROWID BATCHED" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES" object_type="TABLE" object_instance="4" cost="5" cardinality="2" bytes="80" cpu_cost="54.679" io_cost="5" qblock_name="SEL$D54FFF24" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement object_ID="26" id="161" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="2" cost="3" cardinality="2" cpu_cost="39.267" io_cost="3" qblock_name="SEL$D54FFF24" access_predicates="&quot;LOOKUP_TYPE&quot;(+)='ITEM_TYPE' AND &quot;LANGUAGE&quot;(+)='US'" filter_predicates="&quot;LANGUAGE&quot;(+)='US' AND (&quot;LOOKUP_CODE&quot;(+)='ACA' OR &quot;LOOKUP_CODE&quot;(+)='ACARV' OR &quot;LOOKUP_CODE&quot;(+)='INS/EMB' OR &quot;LOOKUP_CODE&quot;(+)='INT' OR &quot;LOOKUP_CODE&quot;(+)='MP' OR &quot;LOOKUP_CODE&quot;(+)='SEMI' OR &quot;LOOKUP_CODE&quot;(+)='SERV')" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                              <PlanElement id="162" operation="HASH JOIN" option="OUTER" cost="4.870" cardinality="4.105" bytes="562.385" cpu_cost="268.559.847" io_cost="4.837" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;INVENTORY_ITEM_ID&quot;(+)" time="1">
+                                                                <PlanElements>
+                                                                  <PlanElement id="163" operation="HASH JOIN" option="OUTER" cost="1.748" cardinality="3.779" bytes="302.320" cpu_cost="76.747.127" io_cost="1.739" access_predicates="&quot;IB&quot;.&quot;INVENTORY_ITEM_ID&quot;=&quot;OUM&quot;.&quot;INVENTORY_ITEM_ID&quot;(+) AND &quot;OUM&quot;.&quot;TO_UOM_CODE&quot;(+)=&quot;IB&quot;.&quot;SECONDARY_UOM_CODE&quot;" time="1">
+                                                                    <PlanElements>
+                                                                      <PlanElement object_ID="18" id="164" operation="TABLE ACCESS" option="BY INDEX ROWID BATCHED" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_B" object_type="TABLE" object_instance="14" cost="1.657" cardinality="3.779" bytes="219.182" cpu_cost="59.693.821" io_cost="1.650" qblock_name="SEL$D54FFF24" filter_predicates="&quot;IB&quot;.&quot;ITEM_TYPE&quot;='ACA' OR &quot;IB&quot;.&quot;ITEM_TYPE&quot;='ACARV' OR &quot;IB&quot;.&quot;ITEM_TYPE&quot;='INS/EMB' OR &quot;IB&quot;.&quot;ITEM_TYPE&quot;='INT' OR &quot;IB&quot;.&quot;ITEM_TYPE&quot;='MP' OR &quot;IB&quot;.&quot;ITEM_TYPE&quot;='SEMI' OR &quot;IB&quot;.&quot;ITEM_TYPE&quot;='SERV'" time="1">
+                                                                        <PlanElements>
+                                                                          <PlanElement object_ID="38" id="165" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_B_N13" object_type="INDEX" search_columns="1" cost="26" cardinality="7.560" cpu_cost="1.684.957" io_cost="26" qblock_name="SEL$D54FFF24" access_predicates="&quot;IB&quot;.&quot;ORGANIZATION_ID&quot;=87" time="1"/>
+                                                                        </PlanElements>
+                                                                      </PlanElement>
+                                                                      <PlanElement object_ID="39" id="166" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_UOM_CLASS_CONVERSIONS" object_type="TABLE" object_instance="35" cost="91" cardinality="27.727" bytes="609.994" cpu_cost="13.113.755" io_cost="89" qblock_name="SEL$D54FFF24" time="1"/>
+                                                                    </PlanElements>
+                                                                  </PlanElement>
+                                                                  <PlanElement object_ID="21" id="167" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="INV" object_name="MTL_SYSTEM_ITEMS_TL" object_type="TABLE" object_instance="3" cost="3.121" cardinality="7.425" bytes="423.225" cpu_cost="189.903.370" io_cost="3.098" qblock_name="SEL$D54FFF24" filter_predicates="&quot;ORGANIZATION_ID&quot;(+)=87 AND &quot;LANGUAGE&quot;(+)='US'" time="1"/>
+                                                                </PlanElements>
+                                                              </PlanElement>
+                                                            </PlanElements>
+                                                          </PlanElement>
+                                                        </PlanElements>
+                                                      </PlanElement>
+                                                    </PlanElements>
+                                                  </PlanElement>
+                                                </PlanElements>
+                                              </PlanElement>
+                                            </PlanElements>
+                                          </PlanElement>
+                                        </PlanElements>
+                                      </PlanElement>
+                                    </PlanElements>
+                                  </PlanElement>
+                                </PlanElements>
+                              </PlanElement>
+                            </PlanElements>
+                          </PlanElement>
+                        </PlanElements>
+                      </PlanElement>
+                    </PlanElements>
+                  </PlanElement>
+                  <PlanElement id="168" operation="NESTED LOOPS" option="OUTER" cost="9" cardinality="1" bytes="102" cpu_cost="291.431" io_cost="9" qblock_name="SEL$A3FE1C73" time="1">
+                    <PlanElements>
+                      <PlanElement id="169" operation="NESTED LOOPS" option="OUTER" cost="7" cardinality="1" bytes="64" cpu_cost="275.005" io_cost="7" time="1">
+                        <PlanElements>
+                          <PlanElement id="170" operation="NESTED LOOPS" cost="5" cardinality="1" bytes="26" cpu_cost="258.579" io_cost="5" time="1">
+                            <PlanElements>
+                              <PlanElement object_ID="9" id="171" operation="INDEX" option="UNIQUE SCAN" optimizer="ANALYZED" object_owner="INV" object_name="MTL_PARAMETERS_U1" object_type="INDEX (UNIQUE)" search_columns="1" cost="0" cardinality="1" bytes="4" cpu_cost="1.050" io_cost="0" qblock_name="SEL$A3FE1C73" access_predicates="&quot;MP&quot;.&quot;ORGANIZATION_ID&quot;=87" time="1"/>
+                              <PlanElement object_ID="40" id="172" operation="TABLE ACCESS" option="FULL" optimizer="ANALYZED" object_owner="BOM" object_name="BOM_DELETE_ENTITIES" object_type="TABLE" object_instance="107" cost="5" cardinality="1" bytes="22" cpu_cost="257.529" io_cost="5" qblock_name="SEL$A3FE1C73" filter_predicates="&quot;BDE&quot;.&quot;ORGANIZATION_ID&quot;=87 AND NVL(&quot;BDE&quot;.&quot;DELETE_DATE&quot;,TO_DATE(' 1900-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss'))&gt;CURRENT_DATE-100" time="1"/>
+                            </PlanElements>
+                          </PlanElement>
+                          <PlanElement object_ID="26" id="173" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.426" io_cost="2" qblock_name="SEL$A3FE1C73" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;(+)='BOM_DELETE_ENTITY_TYPE' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;(+)=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;(+)=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;(+)=USERENV('LANG')" filter_predicates="&quot;LV&quot;.&quot;LANGUAGE&quot;(+)=USERENV('LANG') AND &quot;BDE&quot;.&quot;DELETE_ENTITY_TYPE&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;(+)) AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;(+)=0" time="1"/>
+                        </PlanElements>
+                      </PlanElement>
+                      <PlanElement object_ID="26" id="174" operation="INDEX" option="RANGE SCAN" optimizer="ANALYZED" object_owner="APPLSYS" object_name="FND_LOOKUP_VALUES_U1" object_type="INDEX (UNIQUE)" search_columns="4" cost="2" cardinality="1" bytes="38" cpu_cost="16.426" io_cost="2" qblock_name="SEL$A3FE1C73" access_predicates="&quot;LV&quot;.&quot;LOOKUP_TYPE&quot;(+)='BOM_DELETE_STATUS_TYPE' AND &quot;LV&quot;.&quot;VIEW_APPLICATION_ID&quot;(+)=700 AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;(+)=0 AND &quot;LV&quot;.&quot;LANGUAGE&quot;(+)=USERENV('LANG')" filter_predicates="&quot;LV&quot;.&quot;LANGUAGE&quot;(+)=USERENV('LANG') AND &quot;BDE&quot;.&quot;DELETE_STATUS_TYPE&quot;=TO_NUMBER(&quot;LV&quot;.&quot;LOOKUP_CODE&quot;(+)) AND &quot;LV&quot;.&quot;SECURITY_GROUP_ID&quot;(+)=0" time="1"/>
+                    </PlanElements>
+                  </PlanElement>
+                </PlanElements>
+              </PlanElement>
+            </PlanElements>
+          </PlanElement>
+        </PlanElements>
+      </PlanElement>
+    </PlanElements>
+  </PlanElement>
+</ExplainPlan>

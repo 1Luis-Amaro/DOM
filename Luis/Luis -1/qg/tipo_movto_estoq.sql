@@ -1,0 +1,38 @@
+select TRANSACTION_TYPE_ID, TRANSACTION_TYPE_NAME, DESCRIPTION from apps.MTL_TRANSACTION_TYPES;
+
+select distinct(TRANSACTION_TYPE_ID) from apps.mtl_material_transactions;
+
+select TRANSACTION_TYPE_ID, TRANSACTION_TYPE_NAME, DESCRIPTION from apps.MTL_TRANSACTION_TYPES
+where TRANSACTION_TYPE_ID in
+(34,
+51,
+42,
+43,
+100,
+1003,
+121,
+44,
+2,
+32,
+4,
+53,
+1002,
+63,
+35,
+8,
+61,
+17,
+33,
+99,
+101,
+140,
+52,
+36,
+64,
+27,
+18,
+98,
+103,
+62,
+15,
+10008)

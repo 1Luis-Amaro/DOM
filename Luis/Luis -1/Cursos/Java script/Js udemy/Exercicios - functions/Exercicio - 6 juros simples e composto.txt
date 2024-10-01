@@ -1,0 +1,26 @@
+const jurosSimples = function (capitalInicial, taxaDeJuros, tempoDeAplicacao){
+
+	return (capitalInicial + (capitalInicial * taxaDeJuros * tempoDeAplicacao))
+
+}
+
+console.log(jurosSimples(1000,0.10,60))
+
+
+
+
+const jurosCompostos = function (capitalInicial1, taxaDeJuros1, tempoDeAplicacao1){
+
+  let resultado = (capitalInicial1 * (1 + taxaDeJuros1) ** tempoDeAplicacao1)
+
+	return resultado.toFixed(1) 
+  
+
+  
+
+}
+
+console.log(jurosCompostos(1000,0.10,60))
+
+
+    

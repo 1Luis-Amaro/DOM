@@ -1,0 +1,18 @@
+SELECT *
+FROM   apps.xxppg_ar_rma_approvers
+WHERE  nvl(end_date, SYSDATE) >= SYSDATE
+AND    sales_channel_code = 'IND'
+AND    end_amount > 0
+ORDER BY start_amount ;
+
+
+--
+query mais compelta 
+
+SELECT fu.user_name, fu.description, fu.email_address, xara.*
+FROM   apps.xxppg_ar_rma_approvers xara, apps.fnd_user fu
+WHERE  sales_channel_code = 'ARQ'
+AND    nvl(xara.end_amount, 0) > 0
+AND    nvl(xara.end_date, SYSDATE) >= SYSDATE
+AND    fu.employee_id = xara.approver_id
+ORDER  BY xara.start_amount, xara.end_amount;

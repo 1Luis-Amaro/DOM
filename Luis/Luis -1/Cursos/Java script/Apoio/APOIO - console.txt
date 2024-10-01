@@ -1,0 +1,3 @@
+Para eu fazer aparecer algo no terminal coloco:
+
+Console.log('imprimir algo');

@@ -1,0 +1,2 @@
+ROLLBACK : finaliza a transação, desfazendo todas as aplicações de INSERT, UPDATE e DELETE; 
+até o fechamento de uma transação anterior.

@@ -1,0 +1,21 @@
+	ALTER session set current_schema=apps;
+BEGIN Fnd_Client_Info.SET_ORG_CONTEXT ( TO_CHAR(82) ); mo_global.set_policy_context ( 'S', 82 ) ;END;
+/
+SELECT JZATL.LOOKUP_CODE       "Codigo da Classificao Fiscal",
+       JZATL.START_DATE_ACTIVE "Data Inicial de Ativacao",
+       JZATL.END_DATE_ACTIVE "Data Final de Ativacao",
+       JZATL.DESCRIPTION "Descricao",
+       JZATFCV.TAX_CATEGORY "Categoria imposto",
+       JZATFCV.TAX_CODE "Codigo Imposto",
+       JZATFCV.TAX_DESCRIPTION "Descricao Imposto",
+       JZATFCV.TAX_RATE "Taxa",
+       JZATFCV.ENABLED_FLAG "Ativado" 
+  FROM JL_ZZ_AR_TX_FSC_LOOKUP_V JZATL, JL_ZZ_AR_TX_FSC_CLS_V JZATFCV
+ WHERE /*JZATL.LOOKUP_CODE = ('32089010')
+   AND */JZATL.LOOKUP_CODE = JZATFCV.FISCAL_CLASSIFICATION_CODE
+   AND JZATL.ENABLED_FLAG = 'Y';
+ 
+
+ 
+ SELECT *
+  FROM JL_ZZ_AR_TX_FSC_CLS_V

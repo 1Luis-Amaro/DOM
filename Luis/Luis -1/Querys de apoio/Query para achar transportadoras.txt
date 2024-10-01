@@ -1,0 +1,19 @@
+select *
+from apps.oe_order_headers_all
+where FREIGHT_CARRIER_CODE ='SETELOG'
+and creation_date >= sysdate-50 select *
+from apps.WSH_CARRIERS wc
+where freight_code like '%SETE%' --1681912 
+select *
+from apps.AP_SUPPLIERS
+where vendor_id in (1681912,7476) 
+select *
+from apps.AP_SUPPLIER_SITES_ALL
+where vendor_site_id in (1736082,7462)  
+select *
+from apps.WSH_CARRIER_SERVICES wcs
+where carrier_id in (2210121,88621) WSH_ORG_CARRIER_SERVICES wocs
+WSH_CARRIER_SHIP_METHODS wcsm
+MTL_PARAMETERS mp
+HZ_PARTIES hp
+FND_LOOKUP_VALUES_VL fl

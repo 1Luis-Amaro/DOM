@@ -1,0 +1,31 @@
+select interface_line_id, request_id, a.*
+from apps.ra_interface_lines_all a
+where interface_line_attribute1 = '636890';
+
+select *
+from apps.oe_order_headers_all --header da ordem
+where order_number in ('636889','636836')
+
+select *
+from apps.wsh_new_deliveries --header de entrega (delivery)
+where delivery_id in (95674625,95668765)
+
+
+--nesta tabela vou conseguir achar a minha nota pelo numero da ordem
+select  b.user_name,a.INTERFACE_HEADER_ATTRIBUTE3,a.* --a.INTERFACE_HEADER_ATTRIBUTE3 numbero do embarque
+from apps.ra_customer_trx_all a,
+    apps.fnd_user b --table de users
+where a.INTERFACE_HEADER_ATTRIBUTE1 in ('636890') --numero da ordem
+and a.created_by = b.user_id
+
+
+
+
+
+SELECT* FROM APPS.RA_INTERFACE_ERRORS_ALL
+WHERE INTERFACE_LINE_ID = 636889
+
+
+select *
+from apps.ra_customer_trx_all
+where INTERFACE_HEADER_ATTRIBUTE4 = 636889

@@ -1,0 +1,3 @@
+Uma function é um bloco PL/SQL muito semelhante a uma procedure.
+O que podemos entender de início entre esses dois tipos de blocos é que os blocos functions retornam valores 
+e as procedures podem ou não retornar um valor.

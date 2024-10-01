@@ -1,0 +1,42 @@
+
+function calcularImc(peso,altura){    
+    return peso / Math.pow(altura,2);
+    // faço calculo na function, para chama-la a qualquer momento
+}
+
+function classifcarImc(imc){ // faço todo if else dentro de uma function, assim posso chama-la a qualquer momento
+
+if (imc < 18.5){
+    return('abaixo do peso');
+}
+
+else if (imc >=18.5 && imc <25){
+    return('peso normal');
+}
+
+else if(imc >= 25 && imc <30){
+    return('acima do peso');
+}
+
+else if(imc >= 30 && imc <=40){
+    return('obeso');
+}
+
+else {
+    return('obesidade grave');
+}
+}
+
+function main (){  
+const peso = 200;
+const altura = 1.90;
+
+const imc = calcularImc(peso,altura);
+//console.log(calcularImc(peso,altura));
+console.log(classifcarImc(imc));
+}
+//referencio a function principal, então dentro delas coloco minhas outras functions
+main();
+
+
+

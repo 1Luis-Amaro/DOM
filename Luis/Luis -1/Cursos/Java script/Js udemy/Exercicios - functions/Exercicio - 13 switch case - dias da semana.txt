@@ -1,0 +1,25 @@
+const dia = function (numero){
+	switch	(numero){
+  case 1:
+  return "final de semana"
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  return "Dia util"
+  case 7:
+  return "final de semana"
+  default:
+  return "Dia invalido"
+  }
+} 
+
+console.log(dia(1));
+console.log(dia(2));
+console.log(dia(3));
+console.log(dia(4));
+console.log(dia(5));
+console.log(dia(6));
+console.log(dia(7));
+console.log(dia('a'));

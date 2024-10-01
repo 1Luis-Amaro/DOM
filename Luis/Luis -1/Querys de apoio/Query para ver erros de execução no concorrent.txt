@@ -1,0 +1,9 @@
+select user_concurrent_program_name,a.request_id, phase_code,status_code,actual_start_date,a.actual_completion_date,argument_text,a.*
+from apps.FND_CONC_REQ_SUMMARY_V a
+where concurrent_program_id in
+(select concurrent_program_id
+from apps.FND_CONCURRENT_PROGRAMS_VL
+where upper(user_concurrent_program_name) like upper ('%XXPPG - Envio de informações notas com fretes para o PS-FRETE%'))--('XXPPG - Interface Outbound Oracle EBS x WMAS')--,
+--and argument_text like '81.5 NEW, ')--'82.8 NEW, '
+and status_code = 'E'
+order by a.actual_completion_date desc

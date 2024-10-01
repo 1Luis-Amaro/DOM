@@ -1,0 +1,4 @@
+select *
+from apps.ra_customer_trx_all rct,
+apps.ra_customer_trx_lines_all rctl
+where rct.customer_trx_id = rctl.customer_trx_id and rctl.line_type = 'LINE'

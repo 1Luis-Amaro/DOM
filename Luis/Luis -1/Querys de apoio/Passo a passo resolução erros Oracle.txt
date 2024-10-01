@@ -1,0 +1,79 @@
+--Tabela para identificar erros 
+SELECT *
+  FROM apps.ra_INTERFACE_ERRORS_all
+ WHERE INTERFACE_LINE_ID = 101695991;
+
+--Tabela para consultar atributos na tabela de interface
+SELECT *
+  FROM apps.ra_INTERFACE_LINES_all
+ WHERE interfacE_LINE_Attribute3 IN ('87047708');
+ 
+--tabela para consultar itens de inventário 
+SELECT * 
+  FROM apps.MTL_SYSTEM_ITEMS 
+ WHERE INVENTORY_ITEM_ID IN ( 561560,13659);
+ 
+--tabela de detalhes de org de inventario 
+ SELECT * 
+  FROM apps.HR_ALL_ORGANIZATION_UNITS
+
+ -- tabela para localizar todos os parametros
+ SELECT * 
+  FROM apps.MTL_parameters
+  
+  
+--table que tem nome de todas as tables
+  SELECT *
+  FROM all_tables
+  WHERE table_name LIKE '%HR%ORG%'
+
+	
+
+--descobrir o customer_trx-id da NF
+SELECT *
+FROM   apps.ra_customer_trx_all
+WHERE  trx_number = '266071';
+
+
+
+--com o customer_Trx_id verificar qual é o CFOP que está na NF (global_attribute1 é o CFOP)
+SELECT global_attribute1, rctla.line_type, rctla.*
+FROM   apps.ra_customer_trx_lines_all rctla
+WHERE  customer_trx_id = 3259380;
+
+
+
+
+--fazer update para atualizar o CFOP na linha da NF
+UPDATE apps.ra_customer_trx_lines_all
+SET    global_attribute1 = '6101'
+WHERE  customer_trx_id = 3259380
+AND    line_type = 'LINE';
+
+--commit para confirmar a transacao no banco
+COMMIT;
+
+Da para usar tudo de uma vez:
+
+--Usar tambem CFOP
+
+SELECT mp.organization_code
+            ,rbsa.name                  serie_nf
+            ,rcta.creation_date         criacao_nf
+            ,rcta.customer_trx_id
+            ,rcta.trx_number
+            ,rctla.customer_trx_line_id
+      ,rctla.line_number
+            ,msi.segment1               cod_item
+            ,rctla.global_attribute1    cfop
+FROM   apps.ra_customer_trx_all       rcta
+            ,apps.ra_customer_trx_lines_all rctla
+            ,apps.mtl_system_items          msi
+            ,apps.ra_batch_sources_all      rbsa
+            ,apps.mtl_parameters            mp
+WHERE  rcta.customer_trx_id = rctla.customer_trx_id
+AND    rcta.batch_source_id = rbsa.batch_source_id
+AND    rctla.inventory_item_id = msi.inventory_item_id
+AND    rctla.warehouse_id = msi.organization_id
+AND    msi.organization_id = mp.organization_id
+AND    rcta.trx_number = '266071';

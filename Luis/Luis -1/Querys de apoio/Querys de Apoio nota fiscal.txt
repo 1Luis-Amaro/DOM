@@ -1,0 +1,91 @@
+Sobre as diferenças nas querys:  Interface line 1 é ORdem de venda e 3 é delivery
+
+ra_interface_lines_all (tabela)
+
+interface_line_attribute1 é o número da ordem de venda
+
+interface_line_attribute3 é o número da delivery
+
+--Cabeçalho da linha
+SELECT flow_status_code, ooha*
+FROM apps.oe_order_headers_all ooha
+WHERE order_number = ;
+
+-- Linha da ordem
+SELECT flow_status_code, oola*
+FROM apps.oe_order_lines_all oola
+WHERE header_id = ;
+
+--detalhes do embarque
+SELECT * FROM apps.wsh_delivery_details WHERE source_header_id = ;
+
+
+--detalhes da linha de embarque
+SELECT * FROM apps.wsh_delivery_assignments 
+
+--tabela de embarque
+SELECT * FROM apps.wsh_new_deliveries
+
+--interface do AR
+SELECT * FROM apps.ra_interface_lines_all
+
+--notas geradas
+-- cabeçalho
+SELECT *FROM apps.ra_customer_TRX_all
+
+-- linhas totais
+SELECT * FROM apps.ra_customer_trx_lines_all
+
+-- VER OS ITENS DE LINHA DA NOTA
+SELECT * FROM apps.ra_customer_trx_lines_all WHERE CUSTOMER_TRX_ID = 3383578 AND line_type = 'LINE';
+
+
+
+--Consultar novos embarques/delivery
+SELECT * FROM apps.WSH_NEW_DELIVERIES WHERE DELIVERY_ID IN ('80943567');
+
+--Consultar embarque na tabela de interface 
+SELECT * FROM apps.ra_INTERFACE_LINES_all WHERE interfacE_LINE_Attribute3 IN ('80985013');
+
+
+-- Consultar NFs usando embarque
+SELECT * FROM apps.ra_customer_TRx_all WHERE interfacE_header_Attribute3 IN ('80943567');
+
+
+--descobrir o customer_trx-id da NF
+SELECT *
+FROM   apps.ra_customer_trx_all
+WHERE  trx_number = '266071';
+
+
+--Tabela para identificar erros na interface 
+SELECT *
+  FROM apps.ra_INTERFACE_ERRORS_all
+ WHERE INTERFACE_LINE_ID = 101695991;
+
+--Tabela para consultar atributos na tabela de interface
+SELECT *
+  FROM apps.ra_INTERFACE_LINES_all
+ WHERE interfacE_LINE_Attribute3 IN ('87047708');
+ 
+
+ -- tabela para localizar todos os parametros
+ SELECT * 
+  FROM apps.MTL_parameters
+  
+  
+--table que tem nome de todas as tables
+  SELECT *
+  FROM all_tables
+  WHERE table_name LIKE '%HR%ORG%'
+
+
+
+
+
+
+
+
+
+
+

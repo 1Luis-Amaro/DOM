@@ -1,0 +1,16 @@
+let valores = function (a, b, c){
+
+if(a == b && a == c && c == b){
+   console.log('a classificacao do seu triangulo é Isósceles')
+  }
+ 
+ else if ( a == b || b == c || c==a){
+   console.log('a classificacao do seu triangulo é Escaleno')
+  }
+  else {
+   console.log('Todos os lados são diferentes')
+  }
+  
+}
+
+console.log(valores(1,2,3))

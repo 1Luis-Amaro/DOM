@@ -1,0 +1,2 @@
+Operador IN
+O operador IN é utilizado quando desejamos consultar uma tabela, filtrando o valor de um de seus campos a partir de uma lista e possibilidades. Enquanto o operador de comparação de igualdade (=) avalia se os dois valores são iguais, o IN permite verificar se o valor de um campo se encontra em uma lista. Sua sintaxe é a seguinte:

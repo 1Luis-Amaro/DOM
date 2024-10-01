@@ -1,0 +1,9 @@
+--com esse select vejo o header id que vou utilizar na tabela seguinte, o order number é o numero do meu RMA
+select* 
+from apps.oe_order_headers_all
+where ORDER_NUMBER = 830109
+
+--colocando o header id que consegui da tabela de cima, consigo ver o APPROVAL_STATUS
+SELECT *
+FROM apps.XXPPG_AR_RMA_APP_CONTROL
+WHERE header_id = 2374935

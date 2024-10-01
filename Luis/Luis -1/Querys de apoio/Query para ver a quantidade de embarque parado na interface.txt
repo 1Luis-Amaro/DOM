@@ -1,0 +1,5 @@
+-- ver a quantidade de embarques paradas na interface
+SELECT batch_source_name,TRUNC(creation_date),interface_status,COUNT(*)
+FROM apps.ra_interface_lines_all
+WHERE creation_date>=SYSDATE-1
+GROUP BY batch_source_name,TRUNC(creation_date),interface_status

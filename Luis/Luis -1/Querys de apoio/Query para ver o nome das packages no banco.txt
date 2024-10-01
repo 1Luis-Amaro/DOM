@@ -1,0 +1,3 @@
+-- Ver as packages instaladas no banco, usar o nome da package em maiusculo ali
+SELECT * FROM DBA_OBJECTS
+WHERE Object_name LIKE '%%';

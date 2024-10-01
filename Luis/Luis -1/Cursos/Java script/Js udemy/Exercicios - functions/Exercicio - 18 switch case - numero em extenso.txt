@@ -1,0 +1,65 @@
+const numero = function  (extenso){
+	switch(extenso){
+		
+    case 0:
+    return "zero"
+    break
+    
+    case '1':
+    return "um"
+    break
+    
+    case'2':
+    return "dois"
+    break
+    
+    case '3':
+    return "tres"
+		break
+    
+    case '4':
+    return "quatro"
+    break
+    
+    case '5':
+    return "cinco"
+   	break 
+    
+    case '6':
+    return "seis"
+    break
+    
+    case '7':
+    return "sete"
+    break
+    
+    case '8':
+    return "oito"
+    break
+    
+    case '9':
+    return "nove"
+    break
+    
+    case '10':
+    return "dez"
+   	break
+  
+  					default:
+            console.log('Numero fora do intervalo.')
+    
+}
+
+}
+
+console.log(numero(0))
+console.log(numero('2'))
+console.log(numero('3'))
+console.log(numero('4'))
+console.log(numero('5'))
+console.log(numero('6'))
+console.log(numero('7'))
+console.log(numero('8'))
+console.log(numero('9'))
+console.log(numero('10'))
+console.log(numero('11'))

@@ -1,0 +1,13 @@
+select haou.name,xe.creation_date, xteu.transaction_number, xteu.security_id_int_1, xteu.source_id_int_1, xe.*
+from apps.xla_events xe
+   , apps.xla_transaction_entities_upg xteu
+   , apps.hr_all_organization_units haou
+where xe.application_id = 200
+and xe.event_date between TO_DATE ( '01-06-2024',  'DD/MM/RRRR')  and TO_DATE ( '30-06-2024',  'DD/MM/RRRR') 
+and xe.event_status_code not in ('P','N')
+and xe.process_status_code not in ('D')
+and xe.entity_id = xteu.entity_id
+and xteu.application_id = 200
+and xteu.security_id_int_1 = haou.organization_id
+order by haou.name, xe.creation_date, xteu.security_id_int_1,xe.event_date;
+tem menu de contexto

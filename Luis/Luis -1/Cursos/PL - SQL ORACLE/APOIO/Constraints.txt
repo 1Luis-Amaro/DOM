@@ -1,0 +1,4 @@
+O que é uma constraint Oracle?
+a restrição NOT NULL impede que valores NULL sejam inseridos na coluna DataCompra. 
+a restrição de integridade UNIQUE garante que uma coluna ou 
+grupo de colunas (em uma restrição composta) seja única em toda a tabela.

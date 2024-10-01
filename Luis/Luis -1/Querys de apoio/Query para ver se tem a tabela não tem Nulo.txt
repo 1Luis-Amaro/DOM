@@ -1,0 +1,27 @@
+DECLARE
+        v_table_name VARCHAR2(30) := 'ap_supplier_sites_all';
+        v_field      VARCHAR2(15) := 'ATTRIBUTE';
+        v_query      VARCHAR2(200);
+        v_result     VARCHAR2(10);
+BEGIN
+        FOR i IN 1 .. 15 LOOP
+              v_field := v_field || i;
+                v_query := 'SELECT ' || i ||'  FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM ' || v_table_name || ' WHERE ' || v_field ||' IS NOT NULL)';
+
+                BEGIN
+                        EXECUTE IMMEDIATE v_query INTO v_result;
+                        dbms_output.put_line('ATRIBUTE' || v_result || ' - Disponivel');
+            v_field := 'ATTRIBUTE';
+                EXCEPTION
+                        WHEN OTHERS THEN
+              dbms_output.put_line('***** ATRIBUTE' || i || ' - NAO Disponivel');
+                        v_field := 'ATTRIBUTE';
+                END;
+        END LOOP;
+END;
+
+ 
+
+ 
+
+Precisou trocar a tabela é só mudar no parametro =  DECLARE  "v_table_name VARCHAR2"(30) := "'ap_supplier_sites_all'";

@@ -1,0 +1,1 @@
+Para isso a ORACLE disponibiliza o operador MINUS para retornar todas as linhas na primeira instrução SELECT que não são retornadas pela segunda instrução SELECT.

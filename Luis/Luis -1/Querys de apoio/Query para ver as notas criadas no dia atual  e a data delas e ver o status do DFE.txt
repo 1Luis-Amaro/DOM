@@ -1,0 +1,36 @@
+
+--Ver as principais informações da nota 
+SELECT DISTINCT rct.creation_date,
+                rct.customer_trx_id,
+                rct.trx_date,
+                rct.trx_number,
+                rbs.name,
+                rctt.name,
+                rctt.global_attribute5,
+                '---',
+                a.customer_trx_id,
+                a.selected_for_receipt_batch_id,
+                '---',
+                jbc.creation_date,
+                jbc.electronic_inv_access_key,
+                electronic_inv_protocol,
+                jbc.electronic_inv_status
+  FROM apps.ra_customer_trx_all rct,
+       apps.ra_batch_sources_all rbs,
+       APPS.JL_BR_CUSTOMER_TRX_EXTS JBC,
+       apps.ra_cust_trx_types_all rctt,
+       APPS.ar_payment_schedules_all a
+WHERE     RCT.CUSTOMER_TRX_ID = JBC.CUSTOMER_TRX_ID(+)
+         -- and rct.trx_number in ('117', '118', '119', '120','2543')
+     AND  TRUNC (rct.creation_date) >= TRUNC (SYSDATE -1 )
+      -- AND (TRUNC (rct.creation_date) >= TRUNC (SYSDATE - 48) AND TRUNC (rct.creation_date) < TRUNC (SYSDATE))
+       AND rct.batch_source_id = rbs.batch_source_id
+       AND rct.complete_flag = 'Y'
+       AND rctt.cust_trx_type_id = rct.cust_trx_type_id
+       AND rctt.global_attribute5 IS NOT NULL
+       --and a.selected_for_receipt_batch_id = -999
+       AND rct.customer_trx_id = a.customer_trx_id(+)
+       AND rct.org_id = rbs.org_id
+      -- and rct.trx_number in ('370','371','372','373')
+   --   and rct.customer_trx_id in ( )
+ORDER BY rct.creation_date desc--customer_trx_id

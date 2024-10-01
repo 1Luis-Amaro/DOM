@@ -1,0 +1,15 @@
+SELECT Ha.INVENTORY_ITEM_ID,
+               Ha.ORGANIZATION_ID,
+               Ha.CATEGORY_SET_NAME,
+               Ha.CATEGORY_CONCAT_SEGS CATEGORIA,
+               Hu.SEGMENT1 ITEM,
+               Hud.Segment1 NCM
+          FROM APPS.MTL_ITEM_CATEGORIES_V Ha,
+               APPS.MTL_CATEGORIES_V Hud,
+               apps.mtl_system_items Hu
+         WHERE Hud.CATEGORY_ID = Ha.CATEGORY_ID
+          AND  Ha.INVENTORY_ITEM_ID = Hu.INVENTORY_ITEM_ID
+          AND Hu.organization_id = Ha.organization_id
+          AND ha.organization_id = 87
+          AND Hud.Segment1 IN  ( '40022090','47032100','87149310','87149600');
+           

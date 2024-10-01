@@ -1,0 +1,4 @@
+Operador Like
+O operador LIKE é utilizado para buscar por uma determinada string dentro de um campo com valores textuais. Com ele podemos, por exemplo, buscar os registros cujo NOME inicia com uma determinada palavra, ou contém um certo texto.
+
+Para efetuar esse tipo de consulta, podemos utilizar também o caractere % para indicar um "coringa", ou seja, um texto qualquer que pode aparecer no campo. Sua sintaxe padrão é a seguinte:

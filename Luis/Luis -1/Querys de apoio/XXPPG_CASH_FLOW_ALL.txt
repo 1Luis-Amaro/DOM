@@ -1,0 +1,69 @@
+SELECT  (pvsa.global_attribute10
+        ||pvsa.global_attribute11
+        ||pvsa.global_attribute12)                          "COD FORNECEDOR",
+        pv.vendor_name                                      "RAZAO SOCIAL",
+        pv.attribute1                                       GRUPO,
+        Pv.Vendor_Type_Lookup_Code 			                "GRUPO FORNECEDOR",
+        PVSA.GLOBAL_ATTRIBUTE15               		        SITES_GLOBAL_ATTRIBUTE15,
+        aia.invoice_num                                     "NR NF",
+        Aia.SOURCE                                          "MODULO ORIGEM",
+        aia.invoice_currency_code                           MOEDA,
+        to_char (aia.invoice_date)                                    EMISSAO,
+        to_char (apsa.due_date)                                       VENCIMENTO,
+        aia.creation_date                                   CRIACAO,
+        (SELECT AT.NAME
+           from apps.ap_terms AT
+          WHERE AIA.TERMS_ID = AT.TERM_ID)                 CONDICAO,
+        to_char (aia.TERMS_DATE)                                      "DATA CONDICAO",
+        aia.invoice_amount                                  "VALOR NF",
+        apsa.amount_remaining                               "SALDO NF",
+        aia.exchange_rate                                   "TAXA CAMBIO IMPL",
+        (aia.invoice_amount    * nvl(aia.exchange_rate, 1)) "VALOR NF BRL",
+        (apsa.amount_remaining * nvl(aia.exchange_rate,1))  "SALDO NF BRL",
+        Aia.Invoice_Type_Lookup_Code                        "TIPO DE NOTA",
+        Apsa.Payment_Status_Flag                            "STATUS PAGTO",
+        SLA_CONTA.LOCATION,
+        SLA_CONTA.MINOR,
+        SLA_CONTA.PRIME,
+        SLA_CONTA.ACCOUNT_CODE,
+        SLA_CONTA.COST_CENTER,
+        SLA_CONTA.PROD_LINE,
+        SLA_CONTA.INTER_LOC,
+        SLA_CONTA.STATUS_POSTED
+FROM    apps.ap_payment_schedules_all apsa ,
+        apps.po_vendors pv ,
+        apps.po_vendor_sites_all pvsa ,
+        apps.ap_invoices_all aia ,
+        apps.ap_system_parameters_all aspa,
+        Apps.Gl_Code_Combinations Gcc,
+        (SELECT  DISTINCT Gcc.Segment1                      LOCATION,
+                          Gcc.Segment2                      MINOR,
+                          Gcc.Segment3                      PRIME,
+                          Gcc.Segment4                      ACCOUNT_CODE,
+                          Gcc.Segment5                      COST_CENTER,
+                          Gcc.Segment6                      PROD_LINE,
+                          Gcc.Segment7                      INTER_LOC
+                        ,AIDA.ACCOUNTING_DATE  ACCOUNTING_DATE
+                        ,AIDA.POSTED_FLAG STATUS_POSTED
+                 	,AIAA.INVOICE_ID
+            FROM apps.AP_INVOICE_DISTRIBUTIONS_ALL  AIDA
+                 ,apps.XLA_AE_HEADERS             AAHA
+                 ,apps.XLA_AE_LINES               AALA
+                 ,apps.GL_CODE_COMBINATIONS          GCC
+                 ,apps.AP_INVOICES_ALL               AIAA
+            WHERE 1 = 1
+              AND AAHA.AE_HEADER_ID               = AALA.AE_HEADER_ID
+              AND AAHA.EVENT_ID = AIDA.ACCOUNTING_EVENT_ID(+)
+              AND AIDA.DIST_CODE_COMBINATION_ID   = GCC.CODE_COMBINATION_ID
+              AND AIAA.INVOICE_ID                  = AIDA.INVOICE_ID
+              AND AALA.ledger_id = 2021) SLA_CONTA
+WHERE   1=1
+  AND   aia.org_id             = 82
+  AND   pv.vendor_id           = aia.vendor_id
+  AND   apsa.invoice_id        = aia.invoice_id
+  AND   apsa.org_id            = aspa.org_id
+  AND   pv.vendor_id           = pvsa.vendor_id
+  AND   aia.vendor_site_id     = pvsa.vendor_site_id
+  AND   SLA_CONTA.INVOICE_ID (+) = aia.INVOICE_ID
+  AND   Gcc.Code_Combination_Id = aia.ACCTS_PAY_CODE_COMBINATION_ID
+  AND   Aia.SOURCE NOT IN ('XMS','PPG BR CARGA')

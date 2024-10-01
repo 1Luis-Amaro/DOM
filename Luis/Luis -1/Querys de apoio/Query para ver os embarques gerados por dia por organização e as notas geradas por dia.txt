@@ -1,0 +1,14 @@
+
+--tabela de embarque geradas por dia por organização
+SELECT * FROM apps.WSH_NEW_DELIVERIES WHERE ORGANIZATION_ID = 86
+ORDER BY CONFIRM_DATE DESC;
+tem que pegar o que esta com status CL
+que significa closed
+
+
+
+
+-- Query para ver notas geradas por dia por organização
+SELECT *FROM apps.ra_customer_TRX_all
+WHERE INTERFACE_HEADER_ATTRIBUTE10  = '86'
+ORDER BY CREATION_DATE DESC;

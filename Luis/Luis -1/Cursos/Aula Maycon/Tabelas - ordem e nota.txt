@@ -1,0 +1,8 @@
+select customer_trx_id,a.*
+from apps.ra_interface_lines_all a
+where interface_line_attribute1 in ('89726','5235','41274') --tabela da ordem
+
+
+select *
+from apps.ra_customer_trx_all
+where interface_header_attribute1 in ('89726','5235','41274') -- tabela da nota fiscal

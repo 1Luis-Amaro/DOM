@@ -1,0 +1,2 @@
+Operador BETWEEN
+Esse operador é usado quando precisamos recuperar as linhas de uma tabela cujo valor de um campo encontra-se em um intervalo especificado. Esse tipo de consulta é muito comum quando queremos filtrar os dados por intervalos de datas, por exemplo, para retornar os registros de um determinado período. Sua sintaxe é a seguinte:

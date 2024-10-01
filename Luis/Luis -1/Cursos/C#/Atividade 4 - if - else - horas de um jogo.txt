@@ -1,0 +1,31 @@
+using System;
+					
+public class Program
+{
+	public static void Main()
+	{
+		int horaInicial, horaFinal, horaTotal, duracao;
+			
+		Console.WriteLine("Digite a hora inicial do jogo");
+		horaInicial = Convert.ToInt16(Console.ReadLine());
+		
+		Console.WriteLine("Digite a hora final do jogo");
+		horaFinal = Convert.ToInt16(Console.ReadLine());
+		
+		duracao = horaFinal - horaInicial;
+		
+		if (horaInicial < horaFinal) {
+                duracao = horaFinal - horaInicial;
+            }
+            else {
+                duracao = 24 - horaInicial + horaFinal;
+            }
+
+            Console.WriteLine("O JOGO DUROU " + duracao + " HORA(S)");
+        }
+		
+		
+		
+		
+	
+	}

@@ -1,0 +1,3 @@
+O tipo de dados booleano Oracle PL/SQL é um tipo de dados que pode armazenar dois valores: TRUE ou FALSE.
+O tipo de dados Boolean é frequentemente usado em programação para armazenar valores que só podem ser uma de duas opções,
+como verdadeiro ou falso.

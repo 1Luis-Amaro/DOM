@@ -1,0 +1,22 @@
+
+-- Ver  lookup relacionadas ao mastersaf
+  SELECT *
+FROM   apps.fnd_lookup_values
+WHERE  lookup_type LIKE '%JLBR%'
+
+
+-- Ver os códigos de retorno do Sefaz
+SELECT lookup_code, meaning
+FROM   apps.fnd_lookup_values
+WHERE  lookup_type = 'JLBR_EI_STATUS'
+AND    LANGUAGE = 'PTB';
+
+
+LOOKUP_CODE    MEANING
+4    Cancelado
+7    Emissão de Contingência
+1    Enviado
+3    Erro
+2    Finalizado
+6    Obsoleto
+5    Rejeitado pela SEFAZ

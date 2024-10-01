@@ -1,0 +1,7 @@
+
+select to_char(creation_date, 'MONTH'||'-'||'RRRR') ano,sales_channel_code,count(header_id)
+from apps.oe_order_headers_all
+where trunc(creation_date) >= to_date('01/08/2022', 'DD/MM/RRRR')
+group by to_char(creation_date, 'MONTH'||'-'||'RRRR'),sales_channel_code
+order by 1,2
+

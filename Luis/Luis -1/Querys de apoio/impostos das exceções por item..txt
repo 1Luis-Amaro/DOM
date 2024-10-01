@@ -1,0 +1,103 @@
+SELECT
+'ITEM' ""IT_CF"",
+tex.ship_from_code ""EST_ORI"",
+val2.geography_code ""EST_DEST"",
+(SELECT ORGANIZATION_CODE FROM APPS.org_organization_definitions ood WHERE ood.organization_id = tex.organization_id) ""DEP"",
+msi.segment1  ""CODIGO"",
+brt.tax_category ""CAT_IMP"",
+tex.base_rate "" ALIQ_BASE"",
+tex.start_date_active ""VIG_DE"",
+tex.end_date_active ""VIG_ATE"",
+tex.TAX_CODE ""COD_IMP"",
+tex.attribute1 ""MVA""
+FROM   apps.jl_zz_ar_tx_exc_itm_v tex--apps.jl_zz_ar_tx_exc_fsc_all  tex
+      ,apps.mtl_system_items msi
+                  ,apps.jl_zz_ar_tx_categ_all    brt
+                  ,apps.ar_vat_tax_all_b         art
+                  ,apps.ar_system_parameters_all sys
+                  ,apps.hz_geographies           val1
+                  ,apps.hz_geographies           val2
+WHERE  tex.ship_to_segment_id = val2.geography_id
+AND    tex.ship_from_code = val1.geography_code
+AND    tex.organization_id = msi.organization_id
+AND    tex.inventory_item_id = msi.inventory_item_id
+AND    val1.country_code = sys.default_country
+AND    val1.geography_type = sys.global_attribute9
+AND    tex.tax_category_id = brt.tax_category_id
+AND    brt.tax_rule_set = sys.global_attribute13
+AND    tex.tax_code IS NOT NULL
+AND    tex.tax_code = art.tax_code
+AND    art.set_of_books_id = sys.set_of_books_id
+AND    nvl(art.tax_type, 'VAT') = 'VAT'
+AND    nvl(art.tax_class, 'O') = 'O'
+AND    nvl(art.enabled_flag, 'Y') = 'Y'
+AND    tex.tax_category_id =
+                  decode(ltrim(art.global_attribute1, '0123456789 ')
+                                         ,NULL
+                                         ,to_number(art.global_attribute1)
+                                         ,NULL)
+AND    tex.start_date_active <=
+                  nvl(art.end_date, to_date('4712/12/31', 'YYYY/MM/DD'))
+AND    tex.end_date_active >= art.start_date
+AND    nvl(tex.org_id, -99) = nvl(brt.org_id, -99)
+AND    nvl(tex.org_id, -99) = nvl(art.org_id, -99)
+AND    nvl(tex.org_id, -99) = nvl(sys.org_id, -99)
+AND    NOT EXISTS
+(SELECT 1
+                        FROM   apps.ar_vat_tax art1
+                        WHERE  art1.tax_code = art.tax_code
+                        AND    art1.set_of_books_id = art.set_of_books_id
+                        AND    nvl(art1.tax_type, 'VAT') = 'VAT'
+                        AND    nvl(art1.tax_class, 'O') = 'O'
+                        AND    nvl(art1.enabled_flag, 'Y') = 'Y'
+                        AND    art1.global_attribute1 = art.global_attribute1
+                        AND    art1.start_date > art.start_date
+                        AND    art1.start_date <= tex.end_date_active)
+                  --
+--AND    tex.ship_from_code IN ('RS') -- , 'RS'
+--AND    val2.geography_code IN ('RS')
+/*AND    (tex.tax_code IN ('ICMS_ST_MT_0_C'
+                                                                       ,'ICMS_ST_MT_0_D'
+                                                                       ,'ICMS_ST_MT_IMP_0_C'
+                                                                       ,'ICMS_ST_MT_IMP_0_D'))
+*/AND    trunc(nvl(tex.end_date_active, SYSDATE)) >= trunc(SYSDATE)
+---
+UNION
+SELECT
+'ITEM' ""IT_CF"",
+tex.ship_from_code ""EST_ORI"",
+val2.geography_code ""EST_DEST"",
+(SELECT ORGANIZATION_CODE FROM APPS.org_organization_definitions ood WHERE ood.organization_id = tex.organization_id) ""DEP"",
+msi.segment1 ""CODIGO"",
+brt.tax_category ""CAT_IMP"",
+tex.base_rate "" ALIQ_BASE"",
+tex.start_date_active ""VIG_DE"",
+tex.end_date_active ""VIG_ATE"",
+tex.TAX_CODE ""COD_IMP"",
+tex.attribute1 ""MVA""
+FROM   apps.jl_zz_ar_tx_exc_itm_v tex--apps.jl_zz_ar_tx_exc_fsc_all  tex -- select * from apps.jl_zz_ar_tx_exc_itm_v
+      ,apps.mtl_system_items msi
+                  ,apps.jl_zz_ar_tx_categ_all    brt
+                  ,apps.hz_geographies           val1
+                  ,apps.hz_geographies           val2
+                  ,apps.ar_system_parameters_all sys
+WHERE  tex.ship_to_segment_id = val2.geography_id
+AND    tex.ship_from_code = val1.geography_code
+AND    tex.organization_id = msi.organization_id
+AND    tex.inventory_item_id = msi.inventory_item_id
+AND    val1.country_code = sys.default_country
+AND    val1.geography_type = sys.global_attribute9
+AND    tex.tax_category_id = brt.tax_category_id
+AND    brt.tax_rule_set = sys.global_attribute13
+AND    tex.tax_code IS NULL
+AND    nvl(tex.org_id, -99) = nvl(brt.org_id, -99)
+AND    nvl(tex.org_id, -99) = nvl(sys.org_id, -99)
+                  ---
+--AND    tex.ship_from_code IN ('RS') -- , 'RS'
+--AND    val2.geography_code IN ('RS')
+/*AND    (tex.tax_code IN ('ICMS_ST_MT_0_C'
+                                                                       ,'ICMS_ST_MT_0_D'
+                                                                       ,'ICMS_ST_MT_IMP_0_C'
+                                                                       ,'ICMS_ST_MT_IMP_0_D'))
+
+*/AND    trunc(nvl(tex.end_date_active, SYSDATE)) >= trunc(SYSDATE)

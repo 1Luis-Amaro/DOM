@@ -1,0 +1,1 @@
+select * from mtl_transaction_types ORDER BY 1;

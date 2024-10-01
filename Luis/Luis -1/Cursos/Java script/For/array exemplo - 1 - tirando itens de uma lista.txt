@@ -1,0 +1,15 @@
+/*const alunos = ['joao','carlos','marcos'];
+
+alunos.push('renan'); //dessa forma coloco o nome direto para o final
+
+alunos[2] = 'Vinicius'; //posso adcionar dinamicamente no final ou em alguma outra posição, e até alterar a posição...
+
+console.log(alunos); */
+
+const alunos = ['1','2','3'];
+
+console.log(alunos);
+
+console.log(alunos.pop()); //tira o ultimo item e imprime sozinho
+
+console.log(alunos.shift()) // tira o primeiro item e sozinho

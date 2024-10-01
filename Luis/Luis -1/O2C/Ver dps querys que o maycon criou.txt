@@ -1,0 +1,26 @@
+SELECT *
+FROM apps.oe_order_headers_all
+WHERE order_number = '515850'
+
+SELECT *
+FROM apps.oe_order_lines_all
+WHERE HEADER_ID = 1830992--id da ordem de venda
+
+
+SELECT *
+FROM apps.wsh_new_deliveries --header delivery
+
+
+SELECT *
+FROM apps.wsh_delivery_assignments --tabela de amarracao header e linha de delivery
+WHERE DELIVERY_DETAIL_ID = 5923815
+
+MTL_TXN_REQUEST_LINES_V
+
+SELECT *
+FROM apps.wsh_delivery_details --linha delivery
+WHERE SOURCE_LINE_ID = 10650805
+
+SELECT *
+FROM apps.wsh_picking_batches
+WHERE batch_id = 5363106

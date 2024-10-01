@@ -1,0 +1,49 @@
+
+vc tem notas de vendas...
+
+que sao as series 17
+
+quando eu estou vendendo para o cliente..
+
+PPG vende para Toyota.. PPG vende para VW ou Irizar.. é uma nota de saida.. serie 17..
+
+beleza?
+
+agora imagina cenários onde é o contrario.. que a PPG compra. ela é cliente de alguém.. certo?
+ 
+PPG por exemplo produz tinta.. mas não o galão.. ai PPG compra galão do Luis Otavio... nesse caso, Luis Otavio é o fornecedor e a PPG é o cliente.. 
+ 
+e quando isso acontece... a PPG recebe o material, e é dada entrada dessa material no RI, ai entra no saldo esse material e pronto..
+
+agora temos um cenário que é o seguinte..
+
+PPG vende para a IRIZAR... nota de saida.. serie 17..
+
+porém por algum motivo, cancelmaento, recusa, devolução.. tanto faz.. a Irizar precisa devolver esse material...
+
+nesse caso, é feito um RMA (Return Material Authorization)... para seguir com essa devolução..
+
+e essa devoluçao é como se fosse o processo que te expliquei acima...
+ 
+a PPG vira agora como se fosse cliente e a Irizar fornecedor (só pra vc entender, na pratica nao é isso)
+
+mas a Irizar quer devolver o material.. e ele precisa entrar la no recebiemnto, como se fosse uma compra feita pra PPG, para esse saldo entrar denovo no nosso estoque etc...
+
+só que pensa o seguinte...
+
+quando nós vedemos pra eles.. (serie 17) foi gerado uma fatura para pagamento (aberto o contas a receber), o saldo do nosso estoque foi baixado etc...
+
+quando tem q devoluçào, esse processo nao é automatico.. e por isso temos a seria 18 (que é nota de entrada) para desfazer o que foi feito na nota de saida..
+
+
+então depois que o material é recebeido, ele vai para a interface do AR, para gerar uma nota de credito (para abater aquela contas a receber que foi aberto na venda, entao aplica um 
+credito para ele no mesmo valor, zerando assim a divida daquela venda)
+
+
+e essa amarração é exatamente para isso..
+
+vc fala o seguinte..
+
+olha eu tenho serie 17.. venda..
+
+seria 18 é entrada.. e essa serie 18 entrada.. está relacionado com esse tipo de nf de saida..

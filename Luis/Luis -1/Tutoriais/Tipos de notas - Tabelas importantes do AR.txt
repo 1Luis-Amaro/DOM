@@ -1,0 +1,31 @@
+Nota de devolução - 	O Cliente recebeu o nosso produto, viu algo aberto ou não veio da forma que ele quis e por conta disso ele devolve o produto
+			nesse caso vem a nota do cliente que vai para o RI e depois para o INV 
+				
+
+
+Nota de cancelamento - 	Por algum motivo decidi cancelar a nota, o produto vai retornar para a PPG, é feito um RMA de cancelamento associado a essa mesma nota 
+			
+
+
+
+Nota de retorno - 	Por algum motivo o cliente não quis receber o produto, 
+	            	por conta disso o caminhão volta com o produto e com a mesma nota 
+			que foi para o cliente, ai fazemos uma nota com a serie 18 que é para receber o nosso proprio produto
+			desta forma dou entrada no RI e depois no INV
+
+
+
+Nota serie 17   - 	a nota serie 17 quer dizer que um produto está saindo da PPG, mas nem sempre isso vai ser faturavel, 
+			caso eu esteja enviando um brinde não irei receber por isso, o que vai decidir se é uma venda é se tiver o contas a receber aberto
+			e para saber se o contas a receber aberto você vai nas configurações - transação - tipo de transação e procura o tipo que você deseja
+			essa parte do ra_customer_trx_all table que armazena avisos de credito, avisos de debito e transações fiscais (nfs de saida ou entrada)
+			agora se você quer ver a contabilização, vai em ações - parcelas - ar_payment_schedules_all table que armazena os valores a receber 
+			(de nfs de venda ou debit memo) ou avisos de creditos para os clientes,ra_cust_trx_types_all table que armazena
+			o setup do tipo de transação do AR, ra_batch_sources_all armazena o setup de origens usadas nas transacoes do AR
+			ra_batch_sources_all armazena o setup de origens usadas nas transacoes do AR
+ 
+ 
+
+	
+		ra_customer_trx_all table que armazena avisos de credito, avisos de debito e transações fiscais (nfs de saida ou entrada)
+ 

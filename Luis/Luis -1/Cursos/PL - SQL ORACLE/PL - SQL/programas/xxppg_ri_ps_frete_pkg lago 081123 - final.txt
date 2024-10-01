@@ -1,0 +1,1537 @@
+CREATE OR REPLACE PACKAGE BODY APPS.xxppg_ri_ps_frete_pkg IS
+  -- +=================================================================================+
+  -- |         Copyright (c) 2014, PPG do Brasil, Sao Paulo, Brasil                    |
+  -- |                        All rights reserved.                                     |
+  -- +=================================================================================+
+  -- | FILENAME                                                                        |
+  -- |   XXPPG_RI_PS_FRETE_PKG.pls                                                     |
+  -- |                                                                                 |
+  -- | PURPOSE                                                                         |
+  -- |   GAP: 048.1 - PS-FRETE                                                         |
+  -- | DESCRIPTION                                                                     |
+  -- |   Programa que enviara para o PS-Frete os dados de frete referente              |
+  -- |   as notas fiscais de fornecedores no qual a PPG pagou pelo frete               |
+  -- |   e a NF de Devolucao de Cliente que tiveram frete a pagar pela PPG             |
+  -- |                                                                                 |
+  -- |                                                                                 |
+  -- | LANGUAGE                                                                        |
+  -- |    PL/SQL                                                                       |
+  -- |                                                                                 |
+  -- | PRODUCT                                                                         |
+  -- |    PS-FRETE                                                                     |
+  -- |                                                                                 |
+  -- | HISTORY                                                                         |
+  -- |    25-OCT-2014  Claudio Calori                          v1                      |
+  -- |    02-AGO-2017  Jean Antunes       Criado regra para tratar flag                |
+  -- |                                    p_flag_nffs_esp                              |
+  -- |                                                                                 |
+  -- |    26-FEB-2019  Wellington Duarte     #03 SSD2382                               |
+  -- |                                        Projeto OK Deliverables                  |
+  -- |                                        Envio Chave Eletronica NF PSFRETE        |
+  -- |                                                                                 |
+  -- |    16-JUN-2019 Wellington Duarte      #04 SSD2411                               |
+  -- |                                         Manutencao tipo de NF que sao enviadas  |
+  -- |                                         para PSFRETE                            |
+  -- |                                                                                 |
+  -- +=================================================================================+
+  --
+  --Variaveis Globais
+  g_org_id NUMBER := fnd_profile.value('ORG_ID');
+  --
+
+   PROCEDURE p_initialize_globals IS
+  BEGIN
+    g_request_id   := fnd_global.conc_request_id;
+    --
+    mo_global.set_policy_context('S', fnd_global.org_id);
+    mo_global.init('ONT');
+    --
+    SELECT decode(fnd_global.user_id, -1, 0, fnd_global.user_id)
+          ,decode(fnd_global.resp_id, -1, 51201, fnd_global.resp_id)
+          ,decode(fnd_global.resp_appl_id,-1,222,fnd_global.resp_appl_id)
+    INTO   g_user_id, g_resp_id, g_resp_appl_id
+    FROM   dual;
+    --
+    fnd_global.apps_initialize(user_id      => g_user_id
+                              ,resp_id      => g_resp_id
+                              ,resp_appl_id => g_resp_appl_id);
+    --
+  END p_initialize_globals;
+  --
+   PROCEDURE do_start_p(p_errbuf          OUT VARCHAR2
+                       ,p_retcode         OUT NUMBER
+                       ,p_organization_id IN NUMBER
+                       , --organizacao de entrada
+                        p_flag_nffs_esp   IN VARCHAR2
+                       ,p_flag_snd        IN VARCHAR2
+                       ,p_operation_id    IN NUMBER --numero do RI
+                        )
+    IS
+     l_executa      VARCHAR2(200);
+     l_new_peso_liq NUMBER;
+     l_new_peso_brt NUMBER;
+     l_peso_liq     NUMBER;
+     l_peso_brt     NUMBER;
+     l_peso_liq_tot NUMBER;
+     l_peso_brt_tot NUMBER;
+
+     -- Variaveis para as PROFILES ODI --
+     l_url_agent fnd_profile_option_values.profile_option_value%TYPE;
+     l_action_1  fnd_profile_option_values.profile_option_value%TYPE;
+     l_action_2  fnd_profile_option_values.profile_option_value%TYPE;
+
+     -- Variaveis para as SOAP --
+     soap_request     VARCHAR2(32767);
+     soap_respond     CLOB;
+     l_mensagem_resp  VARCHAR2(32767);
+     l_mensagem_resp1 VARCHAR2(32767);
+     http_req         utl_http.req;
+     http_resp        utl_http.resp;
+     --
+     l_ds_conta       VARCHAR2(100); --#04 SSD2411
+     --
+     CURSOR c_nfs_pendentes(p_organization_id IN NUMBER
+                           ,p_operation_id    IN NUMBER) IS
+       SELECT *
+       FROM   xxppg_ri_ps_frete_nf_pend_v2
+       WHERE  organization_id = nvl(p_organization_id, organization_id)
+       AND    numero_recebimento = nvl(p_operation_id, numero_recebimento)
+       AND    nvl(attribute1, 'T') = CASE
+                WHEN 'S' = p_flag_nffs_esp THEN
+                 nvl(attribute1, 'T')
+                WHEN 'N' = p_flag_nffs_esp THEN
+                 'T'
+              END;
+     --
+     CURSOR c_detalhes_nf(p_organization_id IN NUMBER
+                         ,p_operation_id    IN NUMBER) IS
+       SELECT xrpfnd.*
+             ,f_get_elec_key(frete_operation_id, organization_id) cd_chav_aces_nfe
+       FROM   xxppg_ri_ps_frete_nf_detail_v xrpfnd
+       WHERE  organization_id = p_organization_id
+       AND    frete_operation_id = p_operation_id;
+     --
+     CURSOR c_detalhe_itens_nf(p_organization_id IN NUMBER
+                              ,p_operation_id    IN NUMBER) IS
+       SELECT nvl(cfid.invoice_distrib_id,-1) invoice_distrib_id, xrpfni.*  --SSD2411
+       FROM   xxppg_ri_ps_frete_nf_itens_v xrpfni
+             ,apps.cll_f189_invoice_dist   cfid
+       WHERE  xrpfni.organization_id = p_organization_id
+       AND    xrpfni.operation_id = p_operation_id
+       AND    xrpfni.organization_id = cfid.organization_id(+)
+       AND    xrpfni.operation_id = cfid.operation_id(+)
+       AND    xrpfni.invoice_line_id = cfid.invoice_line_id(+);
+     --
+     CURSOR c_pesos_itens_nf(p_invoice_line_id IN NUMBER
+                            ,p_organization_id IN NUMBER
+                            ,p_operation_id    IN NUMBER) IS
+       SELECT new_peso_liq_item, new_peso_brt_item
+       FROM   xxppg_ri_ps_frete_peso_itens_v
+       WHERE  invoice_line_id = p_invoice_line_id
+       AND    organization_id = p_organization_id
+       AND    operation_id = p_operation_id;
+
+     e_erro EXCEPTION;
+     --PRAGMA AUTONOMOUS_TRANSACTION;
+     l_sucesso_1         VARCHAR2(1);
+     l_sucesso_2         VARCHAR2(1);
+     l_sucesso_3         VARCHAR2(1);
+     l_nr_item_nota_fisc NUMBER;
+     l_nr_item_total     NUMBER;
+     l_msgerro           VARCHAR(2000);
+     l_tipo_frete VARCHAR(1);
+     l_msg        VARCHAR(32767);
+     l_count      NUMBER := 0;
+
+   BEGIN
+     p_initialize_globals;
+     l_url_agent := fnd_profile.value('XXPPG_WSURL_PSFRETE'); --'http://dev.web.ppg.com/PSFrete/PSFreteService.svc/PSFreteServiceSoap'; --EndPoint
+     l_action_1  := 'http://tempuri.org/IPSFreteService/MaintainENTR_NOTA'; --SOAPAction_1
+     l_action_2  := 'http://tempuri.org/IPSFreteService/InsertENTR_NOTA_ITEM'; --SOAPAction_2
+     l_sucesso_1 := 'N';
+     l_sucesso_2 := 'N';
+     l_sucesso_3 := 'N';
+ /*  out_p(p_msg => 'URL: ' || l_url_agent);
+     log_p(p_msg => 'PPG RI PS-FRETE - Processo de Envio de informacoes.');
+     log_p(p_msg => '-----------------------------------------------------------------------------------------------');
+     log_p(p_msg => 'Parametros:');
+     log_p(p_msg => '-----------');
+     log_p(p_msg => 'Organizacao de Inventario    : ' || p_organization_id);
+     log_p(p_msg => 'Numero do Recebimento Fiscal : ' || p_operation_id);
+     log_p(p_msg => ' ');
+     log_p(p_msg => '===============================================================================================');
+     log_p(p_msg => ' ');
+     out_p(p_msg => 'As seguintes Notas Fiscais estao sendo processadas para envio ao PS-FRETE.');
+     out_p(p_msg => ' ');
+*/
+     fnd_file.put_line(fnd_file.log, 'Before FOR c_nfs IN c_nfs_pendentes');
+     FOR c_nfs IN c_nfs_pendentes(p_organization_id, p_operation_id) LOOP
+       l_msg        := c_nfs.numero_recebimento || ' - ' ||c_nfs.organization_id;
+       l_tipo_frete := NULL;
+    --   fnd_file.put_line(fnd_file.log, 'IN FOR c_nfs IN c_nfs_pendentes');
+  --     out_p(p_msg => '    Numero_Recebimento: ' || l_msg);
+   /*CRLO1    BEGIN
+         --
+         UPDATE cll_f189_invoices
+         SET    attribute2 = REPLACE(attribute2, '.', ',')
+         WHERE  operation_id = c_nfs.numero_recebimento
+         AND    organization_id = c_nfs.organization_id;
+         COMMIT;
+         --
+         l_msg := l_msg || ' 2';
+         --
+       EXCEPTION
+         WHEN OTHERS THEN
+           out_p(p_msg => '    Erro ao atualizar o recebimento :' ||c_nfs.numero_recebimento);
+           ROLLBACK;
+       END;CRLO1*/
+       --
+       BEGIN
+         DELETE xxppg_ri_ps_frete_nf_ref;
+         l_msg := l_msg || ' 3';
+       EXCEPTION
+         WHEN no_data_found THEN
+           NULL;
+         WHEN OTHERS THEN
+           NULL;
+       END;
+       -- BEGIN SSD2411
+       ---------------------
+       BEGIN
+    --     fnd_file.put_line(fnd_file.log,'INSERT xxppg_ri_ps_frete_nf_ref - Operation_Id: '|| c_nfs.numero_recebimento);
+      --   fnd_file.put_line(fnd_file.log, '');
+         INSERT INTO xxppg_ri_ps_frete_nf_ref
+           (organization_id
+           ,operation_id
+           ,concurrent_id
+           ,ref_operation_id)
+         VALUES
+           (c_nfs.organization_id
+           ,c_nfs.numero_recebimento
+           ,fnd_global.conc_request_id
+           ,c_nfs.numero_recebimento);
+         l_tipo_frete := 'E';
+
+         COMMIT;
+      --   out_p(p_msg => '    l_ref_operation_id: ' ||c_nfs.numero_recebimento);
+       EXCEPTION
+         WHEN OTHERS THEN
+           fnd_file.put_line(fnd_file.log,'Erro Insert xxppg_ri_ps_frete_nf_ref ');
+           fnd_file.put_line(fnd_file.log, SQLERRM);
+           fnd_file.put_line(fnd_file.log,'organization_id ................. : ' ||c_nfs.organization_id);
+           fnd_file.put_line(fnd_file.log,'operation_id .................... : ' ||c_nfs.numero_recebimento);
+           fnd_file.put_line(fnd_file.log,'concurrent_id ................... : ' ||fnd_global.conc_request_id);
+           fnd_file.put_line(fnd_file.log,'ref_operation_id ................ : ' ||c_nfs.numero_recebimento);
+           fnd_file.put_line(fnd_file.log, '');
+       END;
+       -- END SSD2411
+       --
+       l_count := 0;
+       --
+       fnd_file.put_line(fnd_file.log, 'c_nfs_details');
+       fnd_file.put_line(fnd_file.log, 'organization_id .......... : '||c_nfs.organization_id);
+       fnd_file.put_line(fnd_file.log, 'numero_recebimento ....... : '||c_nfs.numero_recebimento);
+       fnd_file.put_line(fnd_file.log, '');
+
+       fnd_file.put_line(fnd_file.log, 'Before FOR c_nfs_details IN c_detalhes_nf');
+       FOR c_nfs_details IN c_detalhes_nf(c_nfs.organization_id ,c_nfs.numero_recebimento) LOOP
+         --
+         fnd_file.put_line(fnd_file.log, 'IN FOR c_nfs_details IN c_detalhes_nf ');
+         fnd_file.put_line(fnd_file.log, 'Frete Operation ID ..... : '||c_nfs_details.frete_operation_id);
+         fnd_file.put_line(fnd_file.log, 'Operation ID ........... : '||c_nfs_details.operation_id);
+         fnd_file.put_line(fnd_file.log, '');
+         l_count := l_count + 1;
+         l_msg   := l_msg || ' 5';
+        -- out_p(p_msg => '-----------------------------------------------------------------------------------------------');
+       --  out_p(p_msg => '...RI Pai: ' || c_nfs.numero_recebimento ||' ...Processando o Recebimento : ' ||c_nfs_details.operation_id || ' da Organizacao : ' ||c_nfs_details.cd_loca_estq || '.');
+       --  out_p(p_msg => '...Processando o Recebimento : ' ||c_nfs_details.operation_id || ' da Organizacao : ' ||c_nfs_details.cd_loca_estq || '.');
+       --  out_p(p_msg => '...Tipo do Frete: ' || l_tipo_frete);
+       --  out_p(p_msg => ' ');
+       --  out_p(p_msg => ' ');
+
+    --     fnd_file.put_line(fnd_file.log,'...Processando o Recebimento : ' ||c_nfs_details.operation_id || ' da Organizacao : ' ||c_nfs_details.cd_loca_estq || '.');
+      --   fnd_file.put_line(fnd_file.log,'...Tipo do Frete: ' || l_tipo_frete);
+         --fnd_file.put_line(fnd_file.log,' ');
+        -- fnd_file.put_line(fnd_file.log,' ');
+
+         --
+         /*CRLO2 BEGIN
+           --
+           UPDATE cll_f189_invoices
+           SET    attribute2 = REPLACE(attribute2, '.', ',')
+           WHERE  operation_id = c_nfs_details.operation_id
+           AND    organization_id = c_nfs_details.operation_id;
+           COMMIT;
+           --
+           l_msg := l_msg || ' 6';
+           --
+           out_p(p_msg => '...Update realizado: ' ||c_nfs_details.operation_id || ';');
+           fnd_file.put_line(fnd_file.log, '...Update realizado: ' ||c_nfs_details.operation_id || ';');
+           --
+         EXCEPTION
+           WHEN OTHERS THEN
+             out_p(p_msg => '...Update nao realizado: ' ||c_nfs_details.operation_id || ';');
+             fnd_file.put_line(fnd_file.log, '...Update nao realizado: ' ||c_nfs_details.operation_id || ';');
+             ROLLBACK;
+         END;CRLO2*/
+
+         l_sucesso_1 := 'N';
+         l_sucesso_3 := 'N';
+         --
+         BEGIN
+           SELECT round(SUM(new_peso_liq_item), 3)
+                 ,round(SUM(new_peso_brt_item), 3)
+           INTO   l_peso_liq, l_peso_brt
+           FROM   xxppg_ri_ps_frete_peso_itens_v
+           WHERE  operation_id = c_nfs_details.operation_id
+           AND    organization_id = c_nfs_details.organization_id
+           GROUP  BY operation_id;
+           l_msg := l_msg || ' 7';
+         EXCEPTION
+           WHEN no_data_found THEN
+             --l_peso_liq := c_nfs_details.qt_tota_peso_liqd;
+             --l_peso_brt := c_nfs_details.qt_tota_peso_brto;
+              l_peso_liq := REPLACE(c_nfs_details.qt_tota_peso_liqd, ',', '.');--c_nfs_details.qt_tota_peso_liqd;
+              l_peso_brt := REPLACE(c_nfs_details.qt_tota_peso_brto, ',', '.');--c_nfs_details.qt_tota_peso_brto;
+              fnd_file.put_line(fnd_file.log, 'NO_DATA_FOUND - l_peso_liq, l_peso_brt ');
+           WHEN OTHERS THEN
+             BEGIN
+             --l_peso_liq := c_nfs_details.qt_tota_peso_liqd;
+             --l_peso_brt := c_nfs_details.qt_tota_peso_brto;
+              l_peso_liq := REPLACE(c_nfs_details.qt_tota_peso_liqd, ',', '.');--c_nfs_details.qt_tota_peso_liqd;
+              l_peso_brt := REPLACE(c_nfs_details.qt_tota_peso_brto, ',', '.');--c_nfs_details.qt_tota_peso_brto;
+               EXCEPTION
+               WHEN OTHERS THEN
+                 out_p(p_msg => '     Informacoes de Peso invalido para o Recebimento: ' ||c_nfs_details.operation_id || chr(13) ||'        Peso Liquido: ' ||c_nfs_details.qt_tota_peso_liqd || chr(13) ||'        Peso Bruto  : ' ||c_nfs_details.qt_tota_peso_brto);
+                 out_p(p_msg => '');
+             END;
+         END;
+         --
+         l_msgerro := '';
+         --
+         fnd_file.put_line(fnd_file.log, 'cd_stat_entr : '||c_nfs_details.cd_stat_entr );
+         IF c_nfs_details.cd_stat_entr = '10' THEN
+           l_msg        := l_msg || ' 8';
+           soap_request := '<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/"><soapenv:Header/><soapenv:Body><tem:MaintainENTR_NOTA><tem:request><![CDATA[<Input>' ||chr(13);
+           soap_request := soap_request || '<transaction_type>'    || 'INSERT'                                       ||'</transaction_type>'  || chr(13); --01
+           soap_request := soap_request || '<cd_empr>'             ||c_nfs_details.cd_empr                           || '</cd_empr>'          || chr(13); --01
+           soap_request := soap_request || '<tp_nota_fisc>'        ||nvl(l_tipo_frete, c_nfs_details.tp_nota_fisc)   || '</tp_nota_fisc>' || chr(13); --02
+           soap_request := soap_request || '<cd_estb_emit>'        ||c_nfs_details.cd_estb_emit                      || '</cd_estb_emit>' ||chr(13); --03
+           soap_request := soap_request || '<cd_sere_nota_fisc>'   ||c_nfs_details.cd_sere_nota_fisc                 ||'</cd_sere_nota_fisc>' || chr(13); --04
+           soap_request := soap_request || '<nr_nota_fisc>'        ||round(c_nfs_details.nr_nota_fisc, 0)            ||'</nr_nota_fisc>' || chr(13); --05
+           soap_request := soap_request || '<nr_etap_nota_fisc>'   ||c_nfs_details.nr_etap_nota_fisc                 ||'</nr_etap_nota_fisc>' || chr(13); --06
+           soap_request := soap_request || '<dt_emis>'             ||c_nfs_details.dt_emis                           || '</dt_emis>' || chr(13); --07
+           soap_request := soap_request || '<dt_entd_said>'        ||c_nfs_details.dt_entd_said                      || '</dt_entd_said>' ||chr(13); --08
+           soap_request := soap_request || '<tp_codi_clie>'        ||c_nfs_details.tp_codi_clie                      || '</tp_codi_clie>' ||chr(13); --09
+           soap_request := soap_request || '<cd_clie>'             ||c_nfs_details.cd_clie                           || '</cd_clie>' || chr(13); --10
+           soap_request := soap_request || '<cd_clie_fili>'        ||c_nfs_details.cd_clie_fili                      || '</cd_clie_fili>' ||chr(13); --11
+           soap_request := soap_request || '<dv_codi_clie>'        ||c_nfs_details.dv_codi_clie                      || '</dv_codi_clie>' ||chr(13); --12
+           soap_request := soap_request || '<tp_codi_tran>'        ||c_nfs_details.tp_codi_tran                      || '</tp_codi_tran>' ||chr(13); --13
+           soap_request := soap_request || '<cd_tran>'             ||c_nfs_details.cd_tran                           || '</cd_tran>' || chr(13); --14
+           soap_request := soap_request || '<cd_tran_fili>'        ||c_nfs_details.cd_tran_fili                      || '</cd_tran_fili>' ||chr(13); --15
+           soap_request := soap_request || '<dv_codi_tran>'        ||c_nfs_details.dv_codi_tran                      || '</dv_codi_tran>' ||chr(13); --16
+           soap_request := soap_request || '<cd_loca_estq>'        ||c_nfs_details.cd_loca_estq                      || '</cd_loca_estq>' ||chr(13); --17
+           soap_request := soap_request || '<qt_tota_peso_brto>'   ||REPLACE(l_peso_brt, ',', '.')                   || '</qt_tota_peso_brto>' || chr(13); --18
+           soap_request := soap_request || '<qt_tota_peso_liqd>'   ||REPLACE(l_peso_liq, ',', '.')                   ||'</qt_tota_peso_liqd>' || chr(13); --19
+           soap_request := soap_request || '<qt_tota_metr_cubi>'   ||c_nfs_details.qt_tota_metr_cubi                 ||'</qt_tota_metr_cubi>' || chr(13); --20
+           soap_request := soap_request || '<qt_tota_peso_cbdo>'   ||c_nfs_details.qt_tota_peso_cbdo                 ||'</qt_tota_peso_cbdo>' || chr(13); --21
+           soap_request := soap_request || '<cd_unid_medd_peso>'   ||c_nfs_details.cd_unid_medd_peso                 ||'</cd_unid_medd_peso>' || chr(13); --22
+           soap_request := soap_request || '<vl_tota_merc>'        ||REPLACE(c_nfs_details.vl_tota_merc, ',', '.')   ||'</vl_tota_merc>' || chr(13); --23
+           soap_request := soap_request || '<vl_tota_nota_fisc>'   ||REPLACE(c_nfs_details.vl_tota_nota_fisc, ',', '.') ||'</vl_tota_nota_fisc>' || chr(13); --24
+           soap_request := soap_request || '<qt_tota_volu>'        ||c_nfs_details.qt_tota_volu || '</qt_tota_volu>' ||chr(13); --25
+           soap_request := soap_request || '<ds_emba_trnp>'        ||translate_f(c_nfs_details.ds_emba_trnp)         ||'</ds_emba_trnp>' || chr(13); --26
+           soap_request := soap_request || '<sg_pais_orig>'        ||c_nfs_details.sg_pais_orig                      || '</sg_pais_orig>' ||chr(13); --27
+           soap_request := soap_request || '<sg_estd_orig>'        ||c_nfs_details.sg_estd_orig                      || '</sg_estd_orig>' ||chr(13); --28
+           soap_request := soap_request || '<nm_cidd_abrv_orig>'   ||c_nfs_details.nm_cidd_abrv_orig ||'</nm_cidd_abrv_orig>' || chr(13); --29
+           soap_request := soap_request || '<sg_pais_dstn>'        ||c_nfs_details.sg_pais_dstn || '</sg_pais_dstn>' ||chr(13); --30
+           soap_request := soap_request || '<sg_estd_dstn>'        ||c_nfs_details.sg_estd_dstn || '</sg_estd_dstn>' ||chr(13); --31
+           soap_request := soap_request || '<nm_cidd_abrv_dstn>'   ||c_nfs_details.nm_cidd_abrv_dstn ||'</nm_cidd_abrv_dstn>' || chr(13); --32
+           soap_request := soap_request || '<cd_tipo_fret>'        ||c_nfs_details.cd_tipo_fret || '</cd_tipo_fret>' ||chr(13); --33
+           soap_request := soap_request || '<cd_via_trnp>'         ||c_nfs_details.cd_via_trnp || '</cd_via_trnp>' ||chr(13); --34
+           soap_request := soap_request || '<cd_stat_entr>'        ||c_nfs_details.cd_stat_entr || '</cd_stat_entr>' ||chr(13); --35
+           soap_request := soap_request || '<nr_carg>'             ||c_nfs_details.nr_carg || '</nr_carg>' || chr(13); --36
+           soap_request := soap_request || '<nr_etap>'             ||c_nfs_details.nr_etap || '</nr_etap>' || chr(13); --37
+           soap_request := soap_request || '<nr_entr>'             ||c_nfs_details.nr_entr || '</nr_entr>' || chr(13); --38
+           soap_request := soap_request || '<nm_estb_emit>'        ||translate_f(c_nfs_details.nm_estb_emit) ||'</nm_estb_emit>' || chr(13); --39
+           soap_request := soap_request || '<nm_estb_emit_abrv>'   ||translate_f(c_nfs_details.nm_estb_emit_abrv) ||'</nm_estb_emit_abrv>' || chr(13); --40
+           soap_request := soap_request || '<tp_cnpj_emit>'        ||c_nfs_details.tp_cnpj_emit || '</tp_cnpj_emit>' ||chr(13); --41
+           soap_request := soap_request || '<cd_cnpj_emit>'        ||c_nfs_details.cd_cnpj_emit || '</cd_cnpj_emit>' ||chr(13); --42
+           soap_request := soap_request || '<cd_cnpj_fili_emit>'   ||c_nfs_details.cd_cnpj_fili_emit ||'</cd_cnpj_fili_emit>' || chr(13); --43
+           soap_request := soap_request || '<dv_cnpj_emit>'        ||c_nfs_details.dv_cnpj_emit || '</dv_cnpj_emit>' ||chr(13); --44
+           soap_request := soap_request || '<cd_insc_estl_emit>'   ||c_nfs_details.cd_insc_estl_emit ||'</cd_insc_estl_emit>' || chr(13); --45
+           soap_request := soap_request || '<sg_pais_emit>'        ||c_nfs_details.sg_pais_emit || '</sg_pais_emit>' ||chr(13); --46
+           soap_request := soap_request || '<sg_estd_emit>'        ||c_nfs_details.sg_estd_emit || '</sg_estd_emit>' ||chr(13); --47
+           soap_request := soap_request || '<nm_cidd_abrv_emit>'   ||c_nfs_details.nm_cidd_abrv_emit ||'</nm_cidd_abrv_emit>' || chr(13); --48
+           soap_request := soap_request || '<nm_bair_emit>'        ||translate_f(c_nfs_details.nm_bair_emit) ||'</nm_bair_emit>' || chr(13); --49
+           soap_request := soap_request || '<nm_rua_emit>'         ||translate_f(c_nfs_details.nm_rua_emit) ||'</nm_rua_emit>' || chr(13); --50
+           soap_request := soap_request || '<cd_cep_emit>'         ||c_nfs_details.cd_cep_emit || '</cd_cep_emit>' ||chr(13); --51
+           soap_request := soap_request || '<fl_tipo_emit>'        ||c_nfs_details.fl_tipo_emit || '</fl_tipo_emit>' ||chr(13); --52
+           soap_request := soap_request || '<tp_loca_forn>'        ||c_nfs_details.tp_loca_forn || '</tp_loca_forn>' ||chr(13); --53
+           soap_request := soap_request || '<nm_clie>'             ||translate_f(c_nfs_details.nm_clie) ||'</nm_clie>' || chr(13); --54
+           soap_request := soap_request || '<nm_clie_abrv>'        ||translate_f(c_nfs_details.nm_clie_abrv) ||'</nm_clie_abrv>' || chr(13); --55
+           soap_request := soap_request || '<cd_insc_estl_clie>'   ||c_nfs_details.cd_insc_estl_clie ||'</cd_insc_estl_clie>' || chr(13); --56
+           soap_request := soap_request || '<sg_pais_clie>'        ||c_nfs_details.sg_pais_clie || '</sg_pais_clie>' ||chr(13); --57
+           soap_request := soap_request || '<sg_estd_clie>'        ||c_nfs_details.sg_estd_clie || '</sg_estd_clie>' ||chr(13); --58
+           soap_request := soap_request || '<nm_cidd_abrv_clie>'   ||c_nfs_details.nm_cidd_abrv_clie ||'</nm_cidd_abrv_clie>' || chr(13); --59
+           soap_request := soap_request || '<nm_rua_clie>'         ||translate_f(c_nfs_details.nm_rua_clie) ||'</nm_rua_clie>' || chr(13); --60
+           soap_request := soap_request || '<nm_bair_clie>'        ||translate_f(c_nfs_details.nm_bair_clie) ||'</nm_bair_clie>' || chr(13); --61
+           soap_request := soap_request || '<cd_cep_clie>'         ||c_nfs_details.cd_cep_clie || '</cd_cep_clie>' ||chr(13); --62
+           soap_request := soap_request || '<tp_loca_clie>'        ||c_nfs_details.tp_loca_clie || '</tp_loca_clie>' ||chr(13); --63
+           soap_request := soap_request || '<nm_tran>'             ||translate_f(c_nfs_details.nm_tran) ||'</nm_tran>' || chr(13); --64
+           soap_request := soap_request || '<nm_tran_abrv>'        ||translate_f(c_nfs_details.nm_tran_abrv) ||'</nm_tran_abrv>' || chr(13); --65
+           soap_request := soap_request || '<cd_tipo_tran>'        ||c_nfs_details.cd_tipo_tran || '</cd_tipo_tran>' ||chr(13); --66
+           soap_request := soap_request || '<cd_insc_estl_tran>'   ||c_nfs_details.cd_insc_estl_tran ||'</cd_insc_estl_tran>' || chr(13); --67
+           soap_request := soap_request || '<sg_pais_tran>'        ||c_nfs_details.sg_pais_tran || '</sg_pais_tran>' ||chr(13); --68
+           soap_request := soap_request || '<sg_estd_tran>'        ||c_nfs_details.sg_estd_tran || '</sg_estd_tran>' ||chr(13); --69
+           soap_request := soap_request || '<nm_cidd_abrv_tran>'   ||c_nfs_details.nm_cidd_abrv_tran ||'</nm_cidd_abrv_tran>' || chr(13); --70
+           soap_request := soap_request || '<nm_bair_tran>'        ||c_nfs_details.nm_bair_tran || '</nm_bair_tran>' ||chr(13); --71
+           soap_request := soap_request || '<nm_rua_tran>'         ||c_nfs_details.nm_rua_tran || '</nm_rua_tran>' ||chr(13); --72
+           soap_request := soap_request || '<cd_cep_tran>'         ||c_nfs_details.cd_cep_tran || '</cd_cep_tran>' ||chr(13); --73
+           soap_request := soap_request || '<nm_loca_estq>'        ||translate_f(c_nfs_details.nm_loca_estq) ||'</nm_loca_estq>' || chr(13); --74
+           soap_request := soap_request || '<nm_loca_estq_abrv>'   ||translate_f(c_nfs_details.nm_loca_estq_abrv) ||'</nm_loca_estq_abrv>' || chr(13); --75
+           soap_request := soap_request || '<tp_cnpj_loca>'        ||c_nfs_details.tp_cnpj_loca || '</tp_cnpj_loca>' ||chr(13); --76
+           soap_request := soap_request || '<cd_cnpj_loca>'        ||c_nfs_details.cd_cnpj_loca || '</cd_cnpj_loca>' ||chr(13); --77
+           soap_request := soap_request || '<cd_cnpj_fili_loca>'   ||c_nfs_details.cd_cnpj_fili_loca ||'</cd_cnpj_fili_loca>' || chr(13); --78
+           soap_request := soap_request || '<dv_cnpj_loca>'        ||c_nfs_details.dv_cnpj_loca || '</dv_cnpj_loca>' ||chr(13); --79
+           soap_request := soap_request || '<cd_insc_estl_loca>'   ||c_nfs_details.cd_insc_estl_loca ||'</cd_insc_estl_loca>' || chr(13); --80
+           soap_request := soap_request || '<sg_pais_loca>'        ||c_nfs_details.sg_pais_loca || '</sg_pais_loca>' ||chr(13); --81
+           soap_request := soap_request || '<sg_estd_loca>'        ||c_nfs_details.sg_estd_loca || '</sg_estd_loca>' ||chr(13); --82
+           soap_request := soap_request || '<nm_cidd_abrv_loca>'   ||c_nfs_details.nm_cidd_abrv_loca ||'</nm_cidd_abrv_loca>' || chr(13); --83
+           soap_request := soap_request || '<nm_bair_loca>'        ||translate_f(c_nfs_details.nm_bair_loca) ||'</nm_bair_loca>' || chr(13); --84
+           soap_request := soap_request || '<nm_rua_loca>'         ||translate_f(c_nfs_details.nm_rua_loca) ||'</nm_rua_loca>' || chr(13); --85
+           soap_request := soap_request || '<cd_cep_loca>'         ||c_nfs_details.cd_cep_loca || '</cd_cep_loca>' ||chr(13); --86
+           soap_request := soap_request || '<cd_tipo_conh>'        ||c_nfs_details.cd_tipo_conh || '</cd_tipo_conh>' ||chr(13); --87
+           soap_request := soap_request || '<cd_user_cadm>'        ||c_nfs_details.cd_user_cadm || '</cd_user_cadm>' ||chr(13); --88
+           soap_request := soap_request || '<ts_cadm>'             ||c_nfs_details.ts_cadm || '</ts_cadm>' || chr(13); --89
+           soap_request := soap_request || '<cd_user_manu>'        ||c_nfs_details.cd_user_manu || '</cd_user_manu>' ||chr(13); --90
+           soap_request := soap_request || '<ts_manu>'             ||c_nfs_details.ts_manu || '</ts_manu>' || chr(13); --91
+           soap_request := soap_request || '<cd_unid_negc>'        ||c_nfs_details.cd_unid_negc || '</cd_unid_negc>' ||chr(13); --92
+           soap_request := soap_request || '<nr_embq>'             ||nvl(c_nfs_details.nr_embq, 0) || '</nr_embq>' ||chr(13); --93
+           soap_request := soap_request || '<nr_rsum>'             ||nvl(c_nfs_details.nr_rsum, 0) || '</nr_rsum>' ||chr(13); --94
+           soap_request := soap_request || '<qt_litr>'             ||nvl(c_nfs_details.qt_litr, 0) || '</qt_litr>' ||chr(13); --95
+           soap_request := soap_request || '<cd_grup_clie>'        ||c_nfs_details.cd_grup_clie || '</cd_grup_clie>' ||chr(13); --96
+           soap_request := soap_request || '<ds_grup_clie>'        ||c_nfs_details.ds_grup_clie || '</ds_grup_clie>' ||chr(13); --97
+           soap_request := soap_request || '<ds_unid_negc>'        ||c_nfs_details.ds_unid_negc || '</ds_unid_negc>' ||chr(13); --98
+           soap_request := soap_request || '<cd_refe_erp>'         ||c_nfs_details.organization_id ||c_nfs_details.operation_id || '</cd_refe_erp>' ||chr(13);
+           --#03
+           soap_request := soap_request || '<cd_chav_aces_nfe>' ||substr(c_nfs_details.cd_chav_aces_nfe, 1, 44) ||'</cd_chav_aces_nfe>' || chr(13); --100  --#03
+           --#03
+           soap_request := soap_request ||'</Input>]]></tem:request></tem:MaintainENTR_NOTA></soapenv:Body></soapenv:Envelope>';
+           l_msg        := l_msg || ' 9';
+           --
+           fnd_file.put_line(fnd_file.log, 'sg_estd_emit ........ : '||c_nfs_details.sg_estd_emit);
+           /*--CRLO3
+           IF c_nfs_details.sg_estd_emit <> 'EX' THEN
+             --
+             l_msg    := l_msg || ' 10';
+             http_req := utl_http.begin_request(l_url_agent ,'POST','HTTP/1.1');
+             utl_http.set_header(http_req, 'Content-Type', 'text/xml');
+             utl_http.set_header(http_req, 'Content-Length' ,length(soap_request));
+             utl_http.set_header(http_req, 'SOAPAction', l_action_1);
+             utl_http.write_text(http_req, soap_request);
+             --
+             BEGIN
+               http_resp := utl_http.get_response(http_req);
+               utl_http.read_text(http_resp, soap_respond);
+               utl_http.end_response(http_resp);
+             EXCEPTION
+               WHEN utl_http.end_of_body THEN
+                 fnd_file.put_line(fnd_file.log,'O servico Insert ENTR_NOTA foi executado sem resposta para a Numero do Recebimento : ' ||c_nfs_details.operation_id);
+                 utl_http.end_response(http_resp);
+                 log_p(p_msg => 'O servico Insert ENTR_NOTA foi executado sem resposta para a Numero do Recebimento : ' ||c_nfs_details.operation_id);
+               WHEN OTHERS THEN
+                 fnd_file.put_line(fnd_file.log, 'Erro HTTP_RESP : '||SQLERRM);
+                 RAISE;
+             END;
+             l_msg := l_msg || ' 11';
+             --Trata a mensagem de retorno para validar se a operacao foi com sucesso ou ocorreu algum erro
+
+             l_mensagem_resp := substr(soap_respond,instr(soap_respond, 'Success') + 11,(instr(soap_respond, '/Success')) -(instr(soap_respond, 'Success') + 15));
+
+             fnd_file.put_line(fnd_file.log, 'Mensagem Resp : '||l_mensagem_resp);
+
+             IF l_mensagem_resp IS NULL THEN
+             l_msg := l_msg || ' 11.5';
+             fnd_file.put_line(fnd_file.log, 'FailedAuthentication - Access is denied');
+             fnd_file.put_line(fnd_file.log, soap_respond);
+             l_sucesso_1 := 'N';
+
+             ELSIF l_mensagem_resp = 'Record added successfully.' THEN
+               --
+               l_msg := l_msg || ' 12';
+               log_p(p_msg => 'Mensagem: Sucesso na orepacao de envio das informacoes da Fatura : ' ||c_nfs_details.operation_id);
+               log_p(p_msg => ' ');
+                l_sucesso_1 := 'Y';
+
+             ELSE
+               --
+               l_msg           := l_msg || ' 13';
+               l_mensagem_resp := substr(soap_respond ,instr(soap_respond, 'ErrorMessage') + 16,(instr(soap_respond,'/ErrorMessage')) -(instr(soap_respond, 'ErrorMessage') + 16));
+               l_sucesso_1 := 'N';
+               --
+               soap_request := '<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/"><soapenv:Header/><soapenv:Body><tem:MaintainENTR_NOTA><tem:request><![CDATA[<Input>' ||chr(13);
+               soap_request := soap_request || '<transaction_type>'    ||'DELETE' || '</transaction_type>' || chr(13); --01
+               soap_request := soap_request || '<cd_empr>'             ||c_nfs_details.cd_empr || '</cd_empr>' ||chr(13); --01
+               soap_request := soap_request || '<tp_nota_fisc>'        ||c_nfs_details.tp_nota_fisc ||'</tp_nota_fisc>' || chr(13); --02
+               soap_request := soap_request || '<cd_estb_emit>'        ||c_nfs_details.cd_estb_emit ||'</cd_estb_emit>' || chr(13); --03
+               soap_request := soap_request || '<cd_sere_nota_fisc>'   ||c_nfs_details.cd_sere_nota_fisc ||'</cd_sere_nota_fisc>' || chr(13); --04
+               soap_request := soap_request || '<nr_nota_fisc>'        ||round(c_nfs_details.nr_nota_fisc, 0) ||'</nr_nota_fisc>' || chr(13); --05
+               soap_request := soap_request ||'</Input>]]> </tem:request></tem:MaintainENTR_NOTA></soapenv:Body></soapenv:Envelope>';
+               --
+               http_req := utl_http.begin_request(l_url_agent,'POST','HTTP/1.1');
+               utl_http.set_header(http_req, 'Content-Type', 'text/xml');
+               utl_http.set_header(http_req, 'Content-Length',length(soap_request));
+               utl_http.set_header(http_req, 'SOAPAction', l_action_1);
+               utl_http.write_text(http_req, soap_request);
+               --
+               BEGIN
+                 http_resp := utl_http.get_response(http_req);
+                 utl_http.read_text(http_resp, soap_respond);
+                 utl_http.end_response(http_resp);
+               EXCEPTION
+                 WHEN utl_http.end_of_body THEN
+                   utl_http.end_response(http_resp);
+                   log_p(p_msg => 'O servico Delete ENTR_NOTA foi executado sem resposta para a N?mero do Recebimento : ' ||
+                                  c_nfs_details.operation_id);
+                 WHEN OTHERS THEN
+                   RAISE;
+               END;
+
+               l_mensagem_resp1 := substr(soap_respond,instr(soap_respond, 'successfully') - 8,20);
+
+             END IF;
+             l_msg := l_msg || ' 14';
+             out_p(p_msg => 'l_Sucesso_1: ' || l_sucesso_1);
+             out_p(p_msg => ' ');
+             out_p(p_msg => '0   - TRANSACTION_TYPE    : ' ||'INSERT');
+             out_p(p_msg => '00  - OPERATION_ID        : ' ||c_nfs_details.operation_id);
+             out_p(p_msg => '01  - CD_EMPR             : ' ||c_nfs_details.cd_empr);
+             out_p(p_msg => '02  - TP_NOTA_FISC        : ' ||nvl(l_tipo_frete, c_nfs_details.tp_nota_fisc));
+             out_p(p_msg => '03  - CD_ESTB_EMIT        : ' ||c_nfs_details.cd_estb_emit);
+             out_p(p_msg => '04  - CD_SERE_NOTA_FISC   : ' ||c_nfs_details.cd_sere_nota_fisc);
+             out_p(p_msg => '05  - NR_NOTA_FISC        : ' ||round(c_nfs_details.nr_nota_fisc, 0));
+             out_p(p_msg => '06  - NR_ETAP_NOTA_FISC   : ' ||c_nfs_details.nr_etap_nota_fisc);
+             out_p(p_msg => '07  - DT_EMIS             : ' ||c_nfs_details.dt_emis);
+             out_p(p_msg => '08  - DT_ENTD_SAID        : ' ||c_nfs_details.dt_entd_said);
+             out_p(p_msg => '09  - TP_CODI_CLIE        : ' ||c_nfs_details.tp_codi_clie);
+             out_p(p_msg => '10  - CD_CLIE             : ' ||c_nfs_details.cd_clie);
+             out_p(p_msg => '11  - CD_CLIE_FILI        : ' ||c_nfs_details.cd_clie_fili);
+             out_p(p_msg => '12  - DV_CODI_CLIE        : ' ||c_nfs_details.dv_codi_clie);
+             out_p(p_msg => '13  - TP_CODI_TRAN        : ' ||c_nfs_details.tp_codi_tran);
+             out_p(p_msg => '14  - CD_TRAN             : ' ||c_nfs_details.cd_tran);
+             out_p(p_msg => '15  - CD_TRAN_FILI        : ' ||c_nfs_details.cd_tran_fili);
+             out_p(p_msg => '16  - DV_CODI_TRAN        : ' ||c_nfs_details.dv_codi_tran);
+             out_p(p_msg => '17  - CD_LOCA_ESTQ        : ' ||c_nfs_details.cd_loca_estq);
+             out_p(p_msg => '18  - QT_TOTA_PESO_BRTO   : ' ||REPLACE(l_peso_brt, ',', '.'));
+             out_p(p_msg => '19  - QT_TOTA_PESO_LIQD   : ' ||REPLACE(l_peso_liq, ',', '.'));
+             out_p(p_msg => '20  - QT_TOTA_METR_CUBI   : ' ||c_nfs_details.qt_tota_metr_cubi);
+             out_p(p_msg => '21  - QT_TOTA_PESO_CBDO   : ' ||c_nfs_details.qt_tota_peso_cbdo);
+             out_p(p_msg => '22  - CD_UNID_MEDD_PESO   : ' ||c_nfs_details.cd_unid_medd_peso);
+             out_p(p_msg => '23  - VL_TOTA_MERC        : ' ||REPLACE(c_nfs_details.vl_tota_merc, ',', '.'));
+             out_p(p_msg => '24  - VL_TOTA_NOTA_FISC   : ' ||REPLACE(c_nfs_details.vl_tota_nota_fisc,',','.'));
+             out_p(p_msg => '25  - QT_TOTA_VOLU        : ' ||c_nfs_details.qt_tota_volu);
+             out_p(p_msg => '26  - DS_EMBA_TRNP        : ' ||c_nfs_details.ds_emba_trnp);
+             out_p(p_msg => '27  - SG_PAIS_ORIG        : ' ||c_nfs_details.sg_pais_orig);
+             out_p(p_msg => '28  - SG_ESTD_ORIG        : ' ||c_nfs_details.sg_estd_orig);
+             out_p(p_msg => '29  - NM_CIDD_ABRV_ORIG   : ' ||c_nfs_details.nm_cidd_abrv_orig);
+             out_p(p_msg => '30  - SG_PAIS_DSTN        : ' ||c_nfs_details.sg_pais_dstn);
+             out_p(p_msg => '31  - SG_ESTD_DSTN        : ' ||c_nfs_details.sg_estd_dstn);
+             out_p(p_msg => '32  - NM_CIDD_ABRV_DSTN   : ' ||c_nfs_details.nm_cidd_abrv_dstn);
+             out_p(p_msg => '33  - CD_TIPO_FRET        : ' ||c_nfs_details.cd_tipo_fret);
+             out_p(p_msg => '34  - CD_VIA_TRNP         : ' ||c_nfs_details.cd_via_trnp);
+             out_p(p_msg => '35  - CD_STAT_ENTR        : ' ||c_nfs_details.cd_stat_entr);
+             out_p(p_msg => '36  - NR_CARG             : ' ||c_nfs_details.nr_carg);
+             out_p(p_msg => '37  - NR_ETAP             : ' ||c_nfs_details.nr_etap);
+             out_p(p_msg => '38  - NR_ENTR             : ' ||c_nfs_details.nr_entr);
+             out_p(p_msg => '39  - NM_ESTB_EMIT        : ' ||c_nfs_details.nm_estb_emit);
+             out_p(p_msg => '40  - NM_ESTB_EMIT_ABRV   : ' ||c_nfs_details.nm_estb_emit_abrv);
+             out_p(p_msg => '41  - TP_CNPJ_EMIT        : ' ||c_nfs_details.tp_cnpj_emit);
+             out_p(p_msg => '42  - CD_CNPJ_EMIT        : ' ||c_nfs_details.cd_cnpj_emit);
+             out_p(p_msg => '43  - CD_CNPJ_FILI_EMIT   : ' ||c_nfs_details.cd_cnpj_fili_emit);
+             out_p(p_msg => '44  - DV_CNPJ_EMIT        : ' ||c_nfs_details.dv_cnpj_emit);
+             out_p(p_msg => '45  - CD_INSC_ESTL_EMIT   : ' ||c_nfs_details.cd_insc_estl_emit);
+             out_p(p_msg => '46  - SG_PAIS_EMIT        : ' ||c_nfs_details.sg_pais_emit);
+             out_p(p_msg => '47  - SG_ESTD_EMIT        : ' ||c_nfs_details.sg_estd_emit);
+             out_p(p_msg => '48  - NM_CIDD_ABRV_EMIT   : ' ||c_nfs_details.nm_cidd_abrv_emit);
+             out_p(p_msg => '49  - NM_BAIR_EMIT        : ' ||c_nfs_details.nm_bair_emit);
+             out_p(p_msg => '50  - NM_RUA_EMIT         : ' ||c_nfs_details.nm_rua_emit);
+             out_p(p_msg => '51  - CD_CEP_EMIT         : ' ||c_nfs_details.cd_cep_emit);
+             out_p(p_msg => '52  - FL_TIPO_EMIT        : ' ||c_nfs_details.fl_tipo_emit);
+             out_p(p_msg => '53  - TP_LOCA_FORN        : ' ||c_nfs_details.tp_loca_forn);
+             out_p(p_msg => '54  - NM_CLIE             : ' ||c_nfs_details.nm_clie);
+             out_p(p_msg => '55  - NM_CLIE_ABRV        : ' ||c_nfs_details.nm_clie_abrv);
+             out_p(p_msg => '56  - CD_INSC_ESTL_CLIE   : ' ||c_nfs_details.cd_insc_estl_clie);
+             out_p(p_msg => '57  - SG_PAIS_CLIE        : ' ||c_nfs_details.sg_pais_clie);
+             out_p(p_msg => '58  - SG_ESTD_CLIE        : ' ||c_nfs_details.sg_estd_clie);
+             out_p(p_msg => '59  - NM_CIDD_ABRV_CLIE   : ' ||c_nfs_details.nm_cidd_abrv_clie);
+             out_p(p_msg => '60  - NM_RUA_CLIE         : ' ||c_nfs_details.nm_rua_clie);
+             out_p(p_msg => '61  - NM_BAIR_CLIE        : ' ||c_nfs_details.nm_bair_clie);
+             out_p(p_msg => '62  - CD_CEP_CLIE         : ' ||c_nfs_details.cd_cep_clie);
+             out_p(p_msg => '63  - TP_LOCA_CLIE        : ' ||c_nfs_details.tp_loca_clie);
+             out_p(p_msg => '64  - NM_TRAN             : ' ||c_nfs_details.nm_tran);
+             out_p(p_msg => '65  - NM_TRAN_ABRV        : ' ||c_nfs_details.nm_tran_abrv);
+             out_p(p_msg => '66  - CD_TIPO_TRAN        : ' ||c_nfs_details.cd_tipo_tran);
+             out_p(p_msg => '67  - CD_INSC_ESTL_TRAN   : ' ||c_nfs_details.cd_insc_estl_tran);
+             out_p(p_msg => '68  - SG_PAIS_TRAN        : ' ||c_nfs_details.sg_pais_tran);
+             out_p(p_msg => '69  - SG_ESTD_TRAN        : ' ||c_nfs_details.sg_estd_tran);
+             out_p(p_msg => '70  - NM_CIDD_ABRV_TRAN   : ' ||c_nfs_details.nm_cidd_abrv_tran);
+             out_p(p_msg => '71  - NM_BAIR_TRAN        : ' ||c_nfs_details.nm_bair_tran);
+             out_p(p_msg => '72  - NM_RUA_TRAN         : ' ||c_nfs_details.nm_rua_tran);
+             out_p(p_msg => '73  - CD_CEP_TRAN         : ' ||c_nfs_details.cd_cep_tran);
+             out_p(p_msg => '74  - NM_LOCA_ESTQ        : ' ||c_nfs_details.nm_loca_estq);
+             out_p(p_msg => '75  - NM_LOCA_ESTQ_ABRV   : ' ||c_nfs_details.nm_loca_estq_abrv);
+             out_p(p_msg => '76  - TP_CNPJ_LOCA        : ' ||c_nfs_details.tp_cnpj_loca);
+             out_p(p_msg => '77  - CD_CNPJ_LOCA        : ' ||c_nfs_details.cd_cnpj_loca);
+             out_p(p_msg => '78  - CD_CNPJ_FILI_LOCA   : ' ||c_nfs_details.cd_cnpj_fili_loca);
+             out_p(p_msg => '79  - DV_CNPJ_LOCA        : ' ||c_nfs_details.dv_cnpj_loca);
+             out_p(p_msg => '80  - CD_INSC_ESTL_LOCA   : ' ||c_nfs_details.cd_insc_estl_loca);
+             out_p(p_msg => '81  - SG_PAIS_LOCA        : ' ||c_nfs_details.sg_pais_loca);
+             out_p(p_msg => '82  - SG_ESTD_LOCA        : ' ||c_nfs_details.sg_estd_loca);
+             out_p(p_msg => '83  - NM_CIDD_ABRV_LOCA   : ' ||c_nfs_details.nm_cidd_abrv_loca);
+             out_p(p_msg => '84  - NM_BAIR_LOCA        : ' ||c_nfs_details.nm_bair_loca);
+             out_p(p_msg => '85  - NM_RUA_LOCA         : ' ||c_nfs_details.nm_rua_loca);
+             out_p(p_msg => '86  - CD_CEP_LOCA         : ' ||c_nfs_details.cd_cep_loca);
+             out_p(p_msg => '87  - CD_TIPO_CONH        : ' ||c_nfs_details.cd_tipo_conh);
+             out_p(p_msg => '88  - CD_USER_CADM        : ' ||c_nfs_details.cd_user_cadm);
+             out_p(p_msg => '89  - TS_CADM             : ' ||c_nfs_details.ts_cadm);
+             out_p(p_msg => '90  - CD_USER_MANU        : ' ||c_nfs_details.cd_user_manu);
+             out_p(p_msg => '91  - TS_MANU             : ' ||c_nfs_details.ts_manu);
+             out_p(p_msg => '92  - NR_EMBQ             : ' ||c_nfs_details.nr_embq);
+             out_p(p_msg => '93  - NR_RSUM             : ' ||c_nfs_details.nr_rsum);
+             out_p(p_msg => '94  - CD_GRUP_CLIE        : ' ||c_nfs_details.cd_grup_clie);
+             out_p(p_msg => '95  - DS_GRUP_CLIE        : ' ||c_nfs_details.ds_grup_clie);
+             out_p(p_msg => '96  - QT_LITR             : ' ||c_nfs_details.qt_litr);
+             out_p(p_msg => '97  - CD_UNID_NEGC        : ' ||c_nfs_details.cd_unid_negc);
+             out_p(p_msg => '98  - DS_UNID_NEGC        : ' ||c_nfs_details.ds_unid_negc);
+             out_p(p_msg => '99  - CD_REFE_ERP         : ' ||c_nfs_details.organization_id ||c_nfs_details.operation_id);
+             out_p(p_msg => '100 - CD_CHAV_ACES_NFE    : ' ||c_nfs_details.cd_chav_aces_nfe);
+             out_p(p_msg => ' ');
+             --out_p ( p_msg => soap_request);
+             --
+             IF l_sucesso_1 = 'N' THEN
+               --Trata a mensagem de retorno para validar se a operacao foi com sucesso ou ocorreu algum erro
+               log_p(p_msg => ' ');
+               out_p(p_msg => ' ');
+               out_p(p_msg => 'Mensagem: A NF sera apagada da tabela TBL_403_ENTR_NOTA do PS FRETE devido ao erro abaixo:');
+               log_p(p_msg => 'Mensagem: A NF sera apagada da tabela TBL_403_ENTR_NOTA do PS FRETE devido ao erro abaixo:');
+               log_p(p_msg => 'Erro : ' || l_mensagem_resp);
+               out_p(p_msg => 'Erro : ' || l_mensagem_resp);
+               log_p(p_msg => 'URL Agent : ' || l_url_agent);
+               log_p(p_msg => 'SOAPAction_1 : ' || l_action_1);
+               log_p(p_msg => ' ');
+               out_p(p_msg => ' ');
+               log_p(p_msg => soap_request);
+               log_p(p_msg => ' ');
+               l_msg := l_msg || ' 15';
+               --
+               IF l_mensagem_resp1 = 'deleted successfully' THEN
+                 l_sucesso_3 := 'Y';
+                 l_sucesso_1 := 'N';
+                 out_p(p_msg => 'Mensagem: A NF foi apagada com sucesso.');
+                 log_p(p_msg => 'Mensagem: A NF foi apagada com sucesso.');
+               ELSE
+                 l_sucesso_3      := 'N';
+                 l_sucesso_1      := 'N';
+                 l_mensagem_resp1 := substr(soap_respond,instr(soap_respond,'ErrorMessage') + 16,(instr(soap_respond,'/ErrorMessage')) -(instr(soap_respond,'ErrorMessage') + 16));
+                 out_p(p_msg => 'Mensagem: A NF nao foi apagada devido ao erro abaixo:');
+                 out_p(p_msg => ' ');
+                 log_p(p_msg => ' ');
+                 log_p(p_msg => 'Mensagem: A NF nao foi apagada devido ao erro abaixo:');
+                 out_p(p_msg => 'Erro: ' || l_mensagem_resp1);
+                 log_p(p_msg => 'Erro: ' || l_mensagem_resp1);
+                 out_p(p_msg => ' ');
+                 log_p(p_msg => ' ');
+               END IF;
+             END IF;
+           ELSE
+             l_sucesso_1 := 'N';
+             out_p(p_msg => 'Nf de Exportacao Excluir do processamento: ' || 'Y');
+             UPDATE cll_f189_invoices
+             SET    attribute1 = decode(c_nfs_details.cd_stat_entr,'10','1','90','3',attribute1)
+             WHERE  organization_id = c_nfs_details.organization_id
+             AND    operation_id = c_nfs_details.frete_operation_id;
+             COMMIT;
+             out_p(p_msg => 'Nota Fiscal Excluida do processamento com sucesso! Update Recebimento: ' ||c_nfs_details.operation_id);
+           END IF; CRLO03*/
+
+l_sucesso_1 := 'Y';--ADDED CRLO04
+
+           IF l_sucesso_1 = 'Y' THEN
+             l_msg := l_msg || ' 15';
+             /*CRLO011out_p(p_msg => '--------------------------------------------------------------------------------');
+             out_p(p_msg => '.....Processando tabela TBL_404_ENTR_NOTA_ITEM do PS FRETE.');
+             out_p(p_msg => '.....Campos da Tabela referentes ao Item da Nota Fiscal : ');
+             out_p(p_msg => '--------------------------------------------------------------------------------');
+             CRLOO11*/
+             out_p(p_msg => ' ');
+             l_nr_item_nota_fisc := 0;
+             l_nr_item_total     := 0;
+
+             --out_p(p_msg => 'Recebimento: ' || c_nfs_details.operation_id ||' , ' || c_nfs.organization_id); -- --#04 SSD2411  p_organization_id);
+             l_sucesso_2 := 'N';
+             BEGIN
+
+               fnd_file.put_line(fnd_file.log, 'c_items_nf');
+               fnd_file.put_line(fnd_file.log, 'organization_id .......... : '||c_nfs.organization_id);
+               fnd_file.put_line(fnd_file.log, 'numero_recebimento ....... : '||c_nfs_details.operation_id);
+               fnd_file.put_line(fnd_file.log, '');
+               FOR c_items_nf IN c_detalhe_itens_nf(/*p_organization_id*/c_nfs.organization_id,c_nfs_details.operation_id) LOOP
+                 l_msg := l_msg || ' 16';
+                 OPEN c_pesos_itens_nf(c_items_nf.invoice_line_id,/*p_organization_id*/c_nfs.organization_id ,c_nfs_details.operation_id);
+                 FETCH c_pesos_itens_nf
+                   INTO l_new_peso_liq, l_new_peso_brt;
+                 CLOSE c_pesos_itens_nf;
+                 --
+                 l_msg := l_msg || ' 17';
+                 l_nr_item_nota_fisc := l_nr_item_nota_fisc + 1;
+                 ---
+
+                 --#04 SSD2411
+                 l_ds_conta := f_get_gcc(p_invoice_type       => c_nfs.invoice_type_code
+                                        ,p_operation_id       => c_nfs.numero_recebimento
+                                        ,p_organization_id    => c_nfs.organization_id
+                                        ,p_invoice_line_id    => c_items_nf.invoice_line_id
+                                        ,p_inventory_item_id  => f_get_item_id(c_items_nf.cd_prod)
+                                        ,p_invoice_distrib_id => c_items_nf.invoice_distrib_id);
+
+/*CRLO05
+                 soap_request := '<?xml version="1.0" encoding="UTF-8"?> <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/"> <soapenv:Header/><soapenv:Body><tem:InsertENTR_NOTA_ITEM><tem:request><![CDATA[<Input>' ||chr(13);
+                 soap_request := soap_request || '<cd_empr>'            ||c_items_nf.cd_empr   || '</cd_empr>' ||chr(13); --01
+                 soap_request := soap_request || '<tp_nota_fisc>'       ||nvl(l_tipo_frete, c_items_nf.tp_nota_fisc) ||'</tp_nota_fisc>' || chr(13); --02
+                 soap_request := soap_request || '<cd_estb_emit>'       ||c_nfs_details.cd_estb_emit ||'</cd_estb_emit>' || chr(13); --03
+                 soap_request := soap_request || '<cd_sere_nota_fisc>'  ||c_items_nf.cd_sere_nota_fisc ||'</cd_sere_nota_fisc>' || chr(13); --04
+                 soap_request := soap_request || '<nr_nota_fisc>'       ||round(c_items_nf.nr_nota_fisc, 0) ||'</nr_nota_fisc>' || chr(13); --05
+                 soap_request := soap_request || '<nr_item_nota_fisc>'  ||l_nr_item_nota_fisc ||'</nr_item_nota_fisc>' || chr(13); --06 --l_nr_item_nota_fisc||  replace(trunc(l_new_peso_brt,3)
+                 soap_request := soap_request || '<cd_prod>'            ||substr(c_items_nf.cd_prod, 1, 25) ||'</cd_prod>' || chr(13); --07
+                 soap_request := soap_request || '<qt_item_nota_fisc>'  ||REPLACE(trunc(c_items_nf.qt_item_nota_fisc,3),',','.') || '</qt_item_nota_fisc>' ||chr(13); --08
+                 soap_request := soap_request || '<qt_peso_brto>'       ||REPLACE(trunc(l_new_peso_brt, 3), ',', '.') ||'</qt_peso_brto>' || chr(13); --09
+                 soap_request := soap_request || '<qt_peso_liqd>'       ||REPLACE(trunc(l_new_peso_liq, 3), ',', '.') ||'</qt_peso_liqd>' || chr(13); --10
+                 soap_request := soap_request || '<qt_metr_cubi>'       ||c_items_nf.qt_metr_cubi ||'</qt_metr_cubi>' || chr(13); --11
+                 soap_request := soap_request || '<qt_peso_cbdo>'       ||c_items_nf.qt_peso_cbdo ||'</qt_peso_cbdo>' || chr(13); --12
+                 soap_request := soap_request || '<vl_merc>'            ||REPLACE(c_items_nf.vl_merc, ',', '.') ||'</vl_merc>' || chr(13); --13
+                 soap_request := soap_request || '<vl_item>'            ||REPLACE(c_items_nf.vl_item, ',', '.') ||'</vl_item>' || chr(13); --14
+                 soap_request := soap_request || '<cd_cfop>'            ||c_items_nf.cd_cfop || '</cd_cfop>' ||chr(13); --15
+                 soap_request := soap_request || '<ds_cfop>'            ||c_items_nf.ds_cfop || '</ds_cfop>' ||chr(13); --16
+                 soap_request := soap_request || '<cd_emba>'            ||c_items_nf.cd_emba || '</cd_emba>' ||chr(13); --17
+                 soap_request := soap_request || '<fl_icms_recp>'       ||c_items_nf.fl_icms_recp ||'</fl_icms_recp>' || chr(13); --18
+                 soap_request := soap_request || '<ds_prod>'            ||REPLACE(substr(translate_f(c_items_nf.ds_prod),1,50),'&',' ') || '</ds_prod>' || chr(13); --19
+                 soap_request := soap_request || '<cd_grup_prod_fret>'  ||c_items_nf.cd_grup_prod_fret ||'</cd_grup_prod_fret>' || chr(13); --20
+                 soap_request := soap_request || '<cd_clae_prod>'       ||c_items_nf.cd_clae_prod ||'</cd_clae_prod>' || chr(13); --21
+                 soap_request := soap_request || '<cd_grup_matl>'       ||c_items_nf.cd_grup_matl ||'</cd_grup_matl>' || chr(13); --22
+                 soap_request := soap_request || '<cd_user_cadm>'       ||c_items_nf.cd_user_cadm ||'</cd_user_cadm>' || chr(13); --23
+                 soap_request := soap_request || '<ts_cadm>'            ||c_items_nf.ts_cadm || '</ts_cadm>' ||chr(13); --24
+                 soap_request := soap_request || '<cd_user_manu>'       ||c_items_nf.cd_user_manu ||'</cd_user_manu>' || chr(13); --25
+                 soap_request := soap_request || '<ts_manu>'            ||c_items_nf.ts_manu || '</ts_manu>' ||chr(13); --26
+                 soap_request := soap_request || '<cd_grup_estq>'       ||c_items_nf.cd_grup_estq ||'</cd_grup_estq>' || chr(13); --27
+                 soap_request := soap_request || '<ds_grup_estq>'       ||c_items_nf.ds_grup_estq ||'</ds_grup_estq>' || chr(13); --28
+                 soap_request := soap_request || '<ds_natu_oper_ctbl>'  ||c_items_nf.ds_natu_oper_ctbl ||'</ds_natu_oper_ctbl>' || chr(13); --29
+                 soap_request := soap_request || '<ds_conta>'           ||l_ds_conta                   || '</ds_conta>' ||chr(13); --30  --#04 SSD2411
+                 --soap_request := soap_request || '<ds_conta>'           ||c_nfs_details.ds_conta || '</ds_conta>' ||chr(13); --30      --#04 SSD2411
+                 soap_request := soap_request || '<cd_refe_erp>'        ||c_items_nf.organization_id ||c_items_nf.operation_id || '</cd_refe_erp>' ||chr(13); --31  --#8
+                 soap_request := soap_request ||'</Input>]]></tem:request></tem:InsertENTR_NOTA_ITEM></soapenv:Body></soapenv:Envelope>';
+
+                 --
+                 http_req := utl_http.begin_request(l_url_agent,'POST','HTTP/1.1');
+                 utl_http.set_header(http_req, 'Content-Type', 'text/xml');
+                 utl_http.set_header(http_req, 'Content-Length',length(soap_request));
+                 utl_http.set_header(http_req, 'SOAPAction', l_action_2);
+                 utl_http.write_text(http_req, soap_request);
+                 --
+                 BEGIN
+                   http_resp := utl_http.get_response(http_req);
+                   utl_http.read_text(http_resp, soap_respond);
+                   utl_http.end_response(http_resp);
+                 EXCEPTION
+                   WHEN utl_http.end_of_body THEN
+                     utl_http.end_response(http_resp);
+                     log_p(p_msg => 'O servico Insert ENTR_NOTA_ITEM foi executado sem resposta para o Recebimento :' ||c_items_nf.operation_id);
+                   WHEN OTHERS THEN
+                     RAISE;
+                 END;
+                 --Trata a mensagem de retorno para validar se a operacao foi com sucesso ou ocorreu algum erro
+
+                 l_mensagem_resp := substr(soap_respond,instr(soap_respond, 'Success') + 11,(instr(soap_respond, '/Success')) -(instr(soap_respond, 'Success') + 15));
+                 l_msg           := l_msg || ' 18';
+                 --
+                 IF l_mensagem_resp = 'Record added successfully.' THEN
+                   l_sucesso_2 := 'Y';
+                 ELSE
+                   l_sucesso_2 := 'N';
+                 END IF;
+
+                 l_msg := l_msg || ' 18';
+                 out_p(p_msg => 'Linha: ' || l_nr_item_nota_fisc || ';');
+CRLO05*/
+                --out_p(p_msg => ' ');
+                -- out_p(p_msg => 'NR_NOTA_FISC|CD_CFOP|DS_CFOP|DS_CONTA');
+                 out_p(P_MSG => round(c_items_nf.nr_nota_fisc, 0)||'|'||c_items_nf.cd_cfop||'|'||c_items_nf.ds_cfop||'|'||l_ds_conta);  
+                 /*CRLO010 out_p(p_msg => '00 - OPERATION_ID         : ' ||c_items_nf.operation_id);
+                 out_p(p_msg => '01 - CD_EMPR              : ' ||c_items_nf.cd_empr);
+                 out_p(p_msg => '02 - TP_NOTA_FISC         : ' ||nvl(l_tipo_frete, c_items_nf.tp_nota_fisc));
+                 out_p(p_msg => '03 - CD_ESTB_EMIT         : ' ||c_nfs_details.cd_estb_emit);
+                 out_p(p_msg => '04 - CD_SERE_NOTA_FISC    : ' ||c_items_nf.cd_sere_nota_fisc);
+                 out_p(p_msg => '05 - NR_NOTA_FISC         : ' ||round(c_items_nf.nr_nota_fisc, 0));
+                 out_p(p_msg => '06 - NR_ITEM_NOTA_FISC    : ' ||l_nr_item_nota_fisc);
+                 out_p(p_msg => '07 - CD_PROD              : ' ||substr(c_items_nf.cd_prod, 1, 25));
+                 out_p(p_msg => '08 - QT_ITEM_NOTA_FISC    : ' ||c_items_nf.qt_item_nota_fisc);
+                 out_p(p_msg => '09 - QT_PESO_BRTO         : ' ||REPLACE(trunc(l_new_peso_brt, 3), ',', '.'));
+                 out_p(p_msg => '10 - QT_PESO_LIQD         : ' ||REPLACE(trunc(l_new_peso_liq, 3), ',', '.'));
+                 out_p(p_msg => '11 - QT_METR_CUBI         : ' ||c_items_nf.qt_metr_cubi);
+                 out_p(p_msg => '12 - QT_PESO_CBDO         : ' ||c_items_nf.qt_peso_cbdo);
+                 out_p(p_msg => '13 - VL_MERC              : ' ||REPLACE(c_items_nf.vl_merc, ',', '.'));
+                 out_p(p_msg => '14 - VL_ITEM              : ' ||REPLACE(c_items_nf.vl_item, ',', '.'));
+                 out_p(p_msg => '15 - CD_CFOP              : ' ||c_items_nf.cd_cfop);
+                 out_p(p_msg => '16 - DS_CFOP              : ' ||c_items_nf.ds_cfop);
+                 out_p(p_msg => '17 - CD_EMBA              : ' ||c_items_nf.cd_emba);
+                 out_p(p_msg => '18 - FL_ICMS_RECP         : ' ||c_items_nf.fl_icms_recp);
+                 out_p(p_msg => '19 - DS_PROD              : ' ||c_items_nf.ds_prod);
+                 out_p(p_msg => '20 - CD_GRUP_PROD_FRET    : ' ||c_items_nf.cd_grup_prod_fret);
+                 out_p(p_msg => '21 - CD_CLAE_PROD         : ' ||c_items_nf.cd_clae_prod);
+                 out_p(p_msg => '22 - CD_GRUP_MATL         : ' ||c_items_nf.cd_grup_matl);
+                 out_p(p_msg => '23 - CD_USER_CADM         : ' ||c_items_nf.cd_user_cadm);
+                 out_p(p_msg => '24 - TS_CADM              : ' ||c_items_nf.ts_cadm);
+                 out_p(p_msg => '25 - CD_USER_MANU         : ' ||c_items_nf.cd_user_manu);
+                 out_p(p_msg => '26 - TS_MANU              : ' ||c_items_nf.ts_manu);
+                 out_p(p_msg => '27 - CD_GRUP_ESTQ         : ' ||c_items_nf.cd_grup_estq);
+                 out_p(p_msg => '28 - DS_GRUP_ESTQ         : ' ||c_items_nf.ds_grup_estq);
+                 out_p(p_msg => '29 - DS_NATU_OPER_CTBL    : ' ||c_items_nf.ds_natu_oper_ctbl);
+                 --out_p(p_msg => '30 - DS_CONTA             : ' ||c_nfs_details.ds_conta); l_ds_conta
+                 out_p(p_msg => '30 - DS_CONTA             : ' ||l_ds_conta);
+                 out_p(p_msg => '31 - CD_REFE_ERP          : ' ||c_items_nf.organization_id ||c_items_nf.operation_id);
+                 out_p(p_msg => ' ');
+                 --out_p ( p_msg  =>  soap_request);
+CRLO10/*
+/* CRLO06
+                 IF l_sucesso_2 = 'Y' THEN
+                   out_p(p_msg => 'Linha Inserida: ' || l_sucesso_2 || ';');
+                   log_p(p_msg => 'Linha Inserida: ' || l_sucesso_2 || ';');
+                   log_p(p_msg => 'Mensagem: Linha ' || l_nr_item_nota_fisc ||' inserida com sucesso para o Recebimento : ' ||c_items_nf.operation_id);
+                   out_p(p_msg => 'Mensagem: Linha ' || l_nr_item_nota_fisc ||' inserida com sucesso para o Recebimento : ' ||c_items_nf.operation_id);
+                   log_p(p_msg => ' ');
+                 ELSE
+                   l_mensagem_resp := substr(soap_respond,instr(soap_respond,'ErrorMessage') + 16,(instr(soap_respond,'/ErrorMessage')) -(instr(soap_respond ,'ErrorMessage') + 16));
+                   log_p(p_msg => ' ');
+                   out_p(p_msg => ' ');
+                   out_p(p_msg => 'Linha Inserida: ' || l_sucesso_2 || ';');
+                   log_p(p_msg => 'Linha Inserida: ' || l_sucesso_2 || ';');
+                   out_p(p_msg => ' ');
+                   log_p(p_msg => 'Mensagem: Ocorreu erro na operacao de envio para a tabela TBL_404_ENTR_NOTA_ITEM. Recebimento : ' ||c_items_nf.operation_id || ', Linha: ' ||l_nr_item_nota_fisc);
+                   out_p(p_msg => 'Mensagem: Ocorreu erro na operacao de envio para a tabela TBL_404_ENTR_NOTA_ITEM. Recebimento : ' ||c_items_nf.operation_id || ', Linha: ' ||l_nr_item_nota_fisc);
+                   log_p(p_msg => 'Erro : ' || l_mensagem_resp);
+                   out_p(p_msg => 'Erro : ' || l_mensagem_resp);
+                   log_p(p_msg => 'URL Agent : ' || l_url_agent);
+                   log_p(p_msg => 'SOAPAction : ' || l_action_2);
+                   log_p(p_msg => ' ');
+                   l_nr_item_total := l_nr_item_total + 1;
+                   out_p(p_msg => 'l_Sucesso_2 Nota: ' || l_sucesso_1);
+                   --
+                 END IF; CRLO06*/
+               END LOOP;
+             EXCEPTION
+               WHEN OTHERS THEN
+                 out_p(p_msg => '    Erro: ' || SQLERRM);
+             END;
+             --
+           END IF;
+           /*CRLO07
+           IF l_sucesso_1 = 'Y' AND l_nr_item_total = 0 AND l_sucesso_2 = 'Y' THEN
+             UPDATE cll_f189_invoices
+             SET    attribute1 = decode(c_nfs_details.cd_stat_entr,'10','1','90','3',attribute1)
+             WHERE  organization_id = c_nfs_details.organization_id
+             AND    operation_id = c_nfs_details.frete_operation_id;
+             COMMIT;
+             out_p(p_msg => 'Nota Fiscal inseridas com sucesso! Update Recebimento: ' ||c_nfs_details.operation_id);
+           ELSE
+             IF l_sucesso_1 <> 'N' THEN
+               --
+               l_msg        := l_msg || ' 19';
+               soap_request := '<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/"><soapenv:Header/><soapenv:Body><tem:MaintainENTR_NOTA><tem:request><![CDATA[<Input>' ||chr(13);
+               soap_request := soap_request || '<transaction_type>'  ||'DELETE' || '</transaction_type>' || chr(13); --01
+               soap_request := soap_request || '<cd_empr>'           ||c_nfs_details.cd_empr || '</cd_empr>' ||chr(13); --01
+               soap_request := soap_request || '<tp_nota_fisc>'      ||c_nfs_details.tp_nota_fisc ||'</tp_nota_fisc>' || chr(13); --02
+               soap_request := soap_request || '<cd_estb_emit>'      ||c_nfs_details.cd_estb_emit ||'</cd_estb_emit>' || chr(13); --03
+               soap_request := soap_request || '<cd_sere_nota_fisc>' ||c_nfs_details.cd_sere_nota_fisc ||'</cd_sere_nota_fisc>' || chr(13); --04
+               soap_request := soap_request || '<nr_nota_fisc>'      ||round(c_nfs_details.nr_nota_fisc, 0) ||'</nr_nota_fisc>' || chr(13); --05
+               soap_request := soap_request ||'</Input>]]></tem:request></tem:MaintainENTR_NOTA></soapenv:Body></soapenv:Envelope>';
+               --
+               http_req := utl_http.begin_request(l_url_agent,'POST','HTTP/1.1');
+               utl_http.set_header(http_req, 'Content-Type', 'text/xml');
+               utl_http.set_header(http_req,'Content-Length',length(soap_request));
+               utl_http.set_header(http_req, 'SOAPAction', l_action_1);
+               utl_http.write_text(http_req, soap_request);
+               --
+               BEGIN
+                 http_resp := utl_http.get_response(http_req);
+                 utl_http.read_text(http_resp, soap_respond);
+                 utl_http.end_response(http_resp);
+               EXCEPTION
+                 WHEN utl_http.end_of_body THEN
+                   utl_http.end_response(http_resp);
+                   log_p(p_msg => 'O servico Delete ENTR_NOTA foi executado sem resposta para a N?mero do Recebimento : ' ||
+                                  c_nfs_details.operation_id);
+                 WHEN OTHERS THEN
+                   RAISE;
+               END;
+
+               --Trata a mensagem de retorno para validar se a operacao foi com sucesso ou ocorreu algum erro
+               l_mensagem_resp := substr(soap_respond,instr(soap_respond, 'successfully') - 8,20);
+               out_p(p_msg => '....A NF sera apagada a erros com os itens.');
+               out_p(p_msg => ' ');
+               --
+               IF l_mensagem_resp = 'deleted successfully' THEN
+                 log_p(p_msg => 'Mensagem: Sucesso na operacao de Delete da Fatura : ' ||c_nfs_details.operation_id);
+                 out_p(p_msg => 'Mensagem: Sucesso na operacao de Delete da Fatura : ' ||c_nfs_details.operation_id);
+                 log_p(p_msg => ' ');
+               ELSE
+                 l_mensagem_resp := substr(soap_respond ,instr(soap_respond,'ErrorMessage') + 16,(instr(soap_respond,'/ErrorMessage')) -(instr(soap_respond,'ErrorMessage') + 16));
+                 log_p(p_msg => ' ');
+                 out_p(p_msg => ' ');
+                 log_p(p_msg => 'Mensagem: Ocorreu erro na operacao de delete para a tabela TBL_403_ENTR_NOTA. Recebimento : ' ||c_nfs_details.operation_id);
+                 out_p(p_msg => 'Mensagem: Ocorreu erro na operacao de delete para a tabela TBL_403_ENTR_NOTA. Recebimento : ' ||c_nfs_details.operation_id);
+                 log_p(p_msg => 'Erro : ' || l_mensagem_resp);
+                 out_p(p_msg => 'Erro : ' || l_mensagem_resp);
+                 log_p(p_msg => 'URL Agent : ' || l_url_agent);
+                 log_p(p_msg => 'SOAPAction_1 : ' || l_action_1);
+                 log_p(p_msg => ' ');
+                 out_p(p_msg => ' ');
+                 log_p(p_msg => soap_request);
+                 log_p(p_msg => ' ');
+               END IF;
+             END IF;
+           END IF; CRLO07*/
+         ELSE
+           l_msg        := l_msg || ' 20';
+           soap_request := '<?xml version="1.0" encoding="UTF-8"?> <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/"><soapenv:Header/><soapenv:Body><tem:MaintainENTR_NOTA><tem:request><![CDATA[<Input>' ||chr(13);
+           --
+           soap_request := soap_request || '<transaction_type>' || 'UPDATE' ||'</transaction_type>' || chr(13); --01
+           soap_request := soap_request || '<cd_empr>' ||c_nfs_details.cd_empr || '</cd_empr>' || chr(13); --01
+           soap_request := soap_request || '<tp_nota_fisc>' ||c_nfs_details.tp_nota_fisc || '</tp_nota_fisc>' ||chr(13); --02
+           soap_request := soap_request || '<cd_estb_emit>' ||c_nfs_details.cd_estb_emit || '</cd_estb_emit>' ||chr(13); --03
+           soap_request := soap_request || '<cd_sere_nota_fisc>' ||c_nfs_details.cd_sere_nota_fisc ||'</cd_sere_nota_fisc>' || chr(13); --04
+           soap_request := soap_request || '<nr_nota_fisc>' ||round(c_nfs_details.nr_nota_fisc, 0) ||'</nr_nota_fisc>' || chr(13); --05
+           soap_request := soap_request || '<cd_stat_entr>' ||c_nfs_details.cd_stat_entr || '</cd_stat_entr>' ||chr(13); --35
+           soap_request := soap_request ||'</Input>]]></tem:request></tem:MaintainENTR_NOTA></soapenv:Body></soapenv:Envelope>';
+           --
+/*CRLO08         
+  http_req := utl_http.begin_request(l_url_agent,'POST','HTTP/1.1');
+           utl_http.set_header(http_req, 'Content-Type', 'text/xml');
+           utl_http.set_header(http_req ,'Content-Length',length(soap_request));
+           utl_http.set_header(http_req, 'SOAPAction', l_action_1);
+           utl_http.write_text(http_req, soap_request);
+           --
+           BEGIN
+             http_resp := utl_http.get_response(http_req);
+             utl_http.read_text(http_resp, soap_respond);
+             utl_http.end_response(http_resp);
+           EXCEPTION
+             WHEN utl_http.end_of_body THEN
+               utl_http.end_response(http_resp);
+               log_p(p_msg => 'O servico Update ENTR_NOTA foi executado sem resposta para a N?mero do Recebimento : ' ||c_nfs_details.operation_id);
+             WHEN OTHERS THEN
+               RAISE;
+           END;
+
+           --Trata a mensagem de retorno para validar se a operacao foi com sucesso ou ocorreu algum erro
+           l_mensagem_resp := substr(soap_respond,instr(soap_respond, 'successfully') - 8,20);
+
+           IF l_mensagem_resp = 'updated successfully' THEN
+             log_p(p_msg => 'Mensagem: Sucesso na operacao de update da Fatura : ' ||c_nfs_details.operation_id);
+             log_p(p_msg => ' ');
+             l_sucesso_1 := 'Y';
+           ELSE
+             l_mensagem_resp := substr(soap_respond,instr(soap_respond, 'ErrorMessage') + 16,(instr(soap_respond, '/ErrorMessage')) -(instr(soap_respond, 'ErrorMessage') + 16));
+             log_p(p_msg => ' ');
+             out_p(p_msg => ' ');
+             log_p(p_msg => 'Mensagem: Ocorreu erro na operacao de update para a tabela TBL_403_ENTR_NOTA. Recebimento : ' ||c_nfs_details.operation_id);
+             out_p(p_msg => 'Mensagem: Ocorreu erro na operacao de update para a tabela TBL_403_ENTR_NOTA. Recebimento : ' ||c_nfs_details.operation_id);
+             log_p(p_msg => 'Erro : ' || l_mensagem_resp);
+             out_p(p_msg => 'Erro : ' || l_mensagem_resp);
+             log_p(p_msg => 'URL Agent : ' || l_url_agent);
+             log_p(p_msg => 'SOAPAction_1 : ' || l_action_1);
+             log_p(p_msg => ' ');
+             out_p(p_msg => ' ');
+             log_p(p_msg => soap_request);
+             log_p(p_msg => ' ');
+             l_sucesso_1 := 'N';
+
+           END IF;
+
+           out_p(p_msg => 'l_Sucesso_1 Nota: ' || l_sucesso_1);
+           out_p(p_msg => '....Informacoes a serem inseridas na tabela  TBL_403_ENTR_NOTA do PS FRETE.');
+           out_p(p_msg => '....Campos da Tabela : ');
+           out_p(p_msg => ' ');
+           out_p(p_msg => '0 -  TRANSACTION_TYPE    : ' || 'UPDATE');
+           out_p(p_msg => '00 - OPERATION_ID        : ' ||c_nfs_details.operation_id);
+           out_p(p_msg => '01 - CD_EMPR             : ' ||c_nfs_details.cd_empr);
+           out_p(p_msg => '02 - TP_NOTA_FISC        : ' ||c_nfs_details.tp_nota_fisc);
+           out_p(p_msg => '03 - CD_ESTB_EMIT        : ' ||c_nfs_details.cd_estb_emit);
+           out_p(p_msg => '04 - CD_SERE_NOTA_FISC   : ' ||c_nfs_details.cd_sere_nota_fisc);
+           out_p(p_msg => '05 - NR_NOTA_FISC        : ' ||round(c_nfs_details.nr_nota_fisc, 0));
+           out_p(p_msg => '35 - CD_STAT_ENTR        : ' ||c_nfs_details.cd_stat_entr);
+           out_p(p_msg => ' ');
+           --
+           l_msg := l_msg || ' 21';
+           --
+
+           IF l_sucesso_1 = 'Y' THEN
+
+             UPDATE cll_f189_invoices
+             SET    attribute1 = decode(c_nfs_details.cd_stat_entr,'10' ,'1','90','3',attribute1)
+             WHERE  organization_id = c_nfs_details.organization_id
+             AND    operation_id = c_nfs_details.frete_operation_id;
+             COMMIT;
+             out_p(p_msg => 'Update realizado com sucesso! Update Recebimento: ' ||c_nfs_details.operation_id);
+           END IF;CRLO08*/
+         END IF;
+         --out_p(p_msg => '--------------------------------------------------------------------------------');
+       END LOOP;
+       --
+/*CRLO09      
+ IF l_count = 0 THEN
+         out_p(p_msg => '   ');
+         out_p(p_msg => '    Não foi possivel processar as notas fiscais realcionadas a este recebimento: ' ||c_nfs.numero_recebimento);
+         out_p(p_msg => '   ');
+       END IF; CRLO09*/
+       --
+     END LOOP;
+
+   EXCEPTION
+     WHEN OTHERS THEN
+       out_p(p_msg => l_msg || ' - ' || SQLERRM);
+       p_retcode := 2;
+   END do_start_p;
+  --
+
+  PROCEDURE log_p(p_msg IN LONG) IS
+  BEGIN
+    --
+    fnd_file.put_line(fnd_file.log, p_msg);
+  END log_p;
+  --
+  PROCEDURE out_p(p_msg IN LONG) IS
+  BEGIN
+    --
+    fnd_file.put_line(fnd_file.output, p_msg);
+    dbms_output.put_line(p_msg);
+    --
+  END out_p;
+  --
+  FUNCTION translate_f(p_in_char IN VARCHAR2) RETURN VARCHAR2 IS
+    l_out_char VARCHAR2(32767);
+  BEGIN
+
+    l_out_char := TRIM(translate(p_in_char,'ãÃõÕçÇüÜâÂêÊôÔáÁàÀéÉíÍóÓúÚºª?ñÑ?','aAoOcCuUaAeEoOaAaAeEiIoOuUoaanN-'));
+    RETURN(l_out_char);
+
+  END translate_f;
+  ---
+  FUNCTION f_get_elec_key(p_operation_id    IN NUMBER
+                         ,p_organization_id IN NUMBER) RETURN VARCHAR2 IS
+    l_elec_key cll_f189_invoices.eletronic_invoice_key%TYPE;
+    --
+  BEGIN
+    BEGIN
+      SELECT eletronic_invoice_key
+      INTO   l_elec_key
+      FROM   cll_f189_invoices
+      WHERE  operation_id = p_operation_id
+      AND    organization_id = p_organization_id;
+    EXCEPTION
+      WHEN OTHERS THEN
+        l_elec_key := NULL;
+        fnd_file.put_line(fnd_file.log,'Erro ao Recuperar Chave Eletronica para Operation id: ' ||p_operation_id);
+        fnd_file.put_line(fnd_file.log, SQLERRM);
+    END;
+    RETURN l_elec_key;
+  END f_get_elec_key;
+  --
+  --BEGIN --#04 SSD2411  FUNCTIONS
+  FUNCTION f_get_gcc_rule(p_invoice_type    IN VARCHAR2
+                         ,p_organization_id IN NUMBER
+                         ,p_lookup_type     IN VARCHAR2
+                         ,p_field           IN VARCHAR2) RETURN VARCHAR2 IS
+    l_rule VARCHAR2(30);
+  BEGIN
+    --
+    BEGIN
+      SELECT CASE
+               WHEN p_field = 'RULE' THEN
+                flvv.description
+               ELSE
+                flvv.tag
+             END
+      INTO   l_rule
+      FROM   fnd_lookup_values_vl flvv, cll_f189_invoice_types cfit
+      WHERE  flvv.lookup_type = p_lookup_type
+      AND    flvv.enabled_flag = 'Y'
+      AND    nvl(flvv.end_date_active, SYSDATE) >= SYSDATE
+      AND    cfit.invoice_type_code = flvv.lookup_code
+      AND    cfit.organization_id = p_organization_id
+      AND    cfit.invoice_type_code = p_invoice_type;
+    EXCEPTION
+      WHEN OTHERS THEN
+        l_rule := NULL;
+        fnd_file.put_line(fnd_file.log,'Erro ao recuperar regra para NF - ' ||SQLERRM);
+        fnd_file.put_line(fnd_file.log,'p_invoice_type ................ : ' ||p_invoice_type);
+        fnd_file.put_line(fnd_file.log,'p_organization_id ............. : ' ||p_organization_id);
+        fnd_file.put_line(fnd_file.log,'p_lookup_type ................. : ' ||p_lookup_type);
+        fnd_file.put_line(fnd_file.log, '');
+    END;
+    --
+    RETURN l_rule;
+    --
+  END f_get_gcc_rule;
+  --
+  FUNCTION f_get_loc_code(p_description IN VARCHAR2) RETURN VARCHAR2 IS
+    l_location_code VARCHAR2(50);
+
+  BEGIN
+    l_location_code := TRIM(translate(upper(REPLACE(substr(p_description,1,instr(p_description,'/',1) - 1),'PPG','')),'ÁÃÂÉÊÍÎÓÔÕÛÚ','AAAEEIIOOOUU'));
+    --
+    IF l_location_code = 'RESENDE' THEN
+      l_location_code := 'NISSAN';
+    END IF;
+    --
+    RETURN l_location_code;
+    --
+  END f_get_loc_code;
+  --
+  FUNCTION f_get_minor(p_organization_id IN NUMBER)  RETURN VARCHAR2 IS
+    l_minor VARCHAR(30);
+
+  BEGIN
+    BEGIN
+      SELECT ffvv.flex_value minor
+      INTO   l_minor
+      FROM   fnd_flex_value_sets ffvs
+            ,fnd_flex_values_vl  ffvv
+            ,hr_locations        hl
+            ,mtl_parameters      mp
+      WHERE  ffvs.flex_value_set_name = 'XXGL_MINOR_LOCATION'
+      AND    ffvs.flex_value_set_id = ffvv.flex_value_set_id
+      AND    hl.location_code = xxppg_ri_ps_frete_pkg.f_get_loc_code(ffvv.description)
+      AND    mp.organization_id = hl.inventory_organization_id
+      AND    mp.organization_id = p_organization_id;
+    EXCEPTION
+      WHEN OTHERS THEN
+        l_minor := NULL;
+        fnd_file.put_line(fnd_file.log,'Erro ao recuperar MINOR - ' || SQLERRM);
+        fnd_file.put_line(fnd_file.log,'p_organization_id ............. : ' ||p_organization_id);
+    END;
+    RETURN l_minor;
+    --
+  END f_get_minor;
+  --
+  --
+  FUNCTION f_get_prod_line(p_operation_id      IN NUMBER
+                          ,p_organization_id   IN NUMBER
+                          ,p_inventory_item_id IN NUMBER DEFAULT NULL
+                          ,p_minor             IN VARCHAR2 DEFAULT NULL
+                          ,p_source            IN VARCHAR2) RETURN VARCHAR2 IS
+    l_product_line  VARCHAR2(10);
+
+  BEGIN
+
+    IF (p_source = 'FORNECEDOR') OR
+       (p_source = 'MINOR' AND p_minor = '51000') THEN
+      BEGIN
+        SELECT gcck_rec.segment6
+        INTO   l_product_line
+        FROM   apps.hz_parties                   hp
+              ,apps.hz_cust_accounts             hca
+              ,apps.hz_cust_site_uses_all        hcsua
+              ,apps.hz_cust_acct_sites_all       hcasa
+              ,apps.hz_party_sites               hps
+              ,apps.hz_locations                 hl
+              ,apps.cll_f189_entry_operations    cfeo
+              ,apps.cll_f189_invoices            cfi
+              ,apps.cll_f189_fiscal_entities_all cffea
+              ,apps.ap_supplier_sites_all        assa
+              ,apps.gl_code_combinations_kfv     gcck_rec
+        WHERE  hcsua.cust_acct_site_id = hcasa.cust_acct_site_id
+        AND    hcasa.party_site_id = hps.party_site_id
+        AND    hps.party_id = hp.party_id
+        AND    hp.party_id = hca.party_id
+        AND    hps.location_id = hl.location_id
+        AND    hcsua.site_use_code = 'BILL_TO'
+        AND    cfeo.operation_id = cfi.operation_id
+        AND    cfeo.organization_id = cfi.organization_id
+        AND    cffea.entity_id = cfi.entity_id
+        AND    assa.vendor_site_id = cffea.vendor_site_id
+        AND    hps.party_site_id = assa.party_site_id
+        AND    cfeo.operation_id = p_operation_id
+        AND    cfeo.organization_id = p_organization_id
+        AND    gcck_rec.code_combination_id = hcsua.gl_id_rec;
+      EXCEPTION
+        WHEN OTHERS THEN
+          l_product_line := NULL;
+          fnd_file.put_line(fnd_file.log, '');
+          fnd_file.put_line(fnd_file.log,'Erro a recuperar Product Line para Fornecedor - ' ||SQLERRM);
+          fnd_file.put_line(fnd_file.log,'p_source ........................... :' ||p_source);
+          fnd_file.put_line(fnd_file.log,'p_operation_id ..................... :' ||p_operation_id);
+          fnd_file.put_line(fnd_file.log,'p_organization_id .................. :' ||p_organization_id);
+          fnd_file.put_line(fnd_file.log,'p_inventory_item_id ................ :' ||p_inventory_item_id);
+          fnd_file.put_line(fnd_file.log,'p_minor ............................ :' ||p_minor);
+          fnd_file.put_line(fnd_file.log, '');
+          RETURN l_product_line;
+      END;
+      --
+      --
+      RETURN l_product_line;
+      --
+    ELSIF p_source = 'MINOR' AND p_minor <> '51000' THEN
+
+      BEGIN
+        SELECT flv2.lookup_code pl_bu
+        INTO   l_product_line
+        FROM   fnd_lookup_values_vl flv1, fnd_lookup_values_vl flv2
+        WHERE  flv1.lookup_type = 'PPG_BR_AR_PL_MINOR'
+        AND    flv1.enabled_flag = 'Y'
+        AND    nvl(flv1.end_date_active, SYSDATE) >= SYSDATE
+        AND    flv2.lookup_type = 'PPG_BR_GL_BU'
+        AND    flv2.enabled_flag = 'Y'
+        AND    nvl(flv2.end_date_active, SYSDATE) >= SYSDATE
+        AND    flv2.lookup_code = flv1.description
+        AND    flv1.lookup_code = p_minor;
+      EXCEPTION
+        WHEN OTHERS THEN
+          l_product_line := NULL;
+          fnd_file.put_line(fnd_file.log, '');
+          fnd_file.put_line(fnd_file.log,'Erro ao recuperar Product Line para BU - ' || SQLERRM);
+          fnd_file.put_line(fnd_file.log,'p_source ........................... :' ||p_source);
+          fnd_file.put_line(fnd_file.log,'p_operation_id ..................... :' ||p_operation_id);
+          fnd_file.put_line(fnd_file.log,'p_organization_id .................. :' ||p_organization_id);
+          fnd_file.put_line(fnd_file.log,'p_inventory_item_id ................ :' ||p_inventory_item_id);
+          fnd_file.put_line(fnd_file.log,'p_minor ............................ :' ||p_minor);
+          fnd_file.put_line(fnd_file.log,'');
+          --
+          RETURN l_product_line;
+      END;
+      RETURN l_product_line;
+    ELSIF p_source = 'CAT_ITEM' THEN
+      BEGIN
+        SELECT mic.segment3 /*mic.segment2, */
+        INTO   l_product_line
+        FROM   mtl_item_categories_v mic, mtl_system_items msi
+        WHERE  mic.category_set_id = 1
+        AND    mic.inventory_item_id = msi.inventory_item_id
+        AND    mic.organization_id = msi.organization_id
+        AND    msi.inventory_item_id = p_inventory_item_id
+        AND    msi.organization_id = p_organization_id;
+      EXCEPTION
+        WHEN OTHERS THEN
+          l_product_line := NULL;
+          fnd_file.put_line(fnd_file.log, '');
+          fnd_file.put_line(fnd_file.log,'Erro ao recuperar Product Line para Item - ' ||SQLERRM);
+          fnd_file.put_line(fnd_file.log,'p_source ........................... :' ||p_source);
+          fnd_file.put_line(fnd_file.log,'p_operation_id ..................... :' ||p_operation_id);
+          fnd_file.put_line(fnd_file.log,'p_organization_id .................. :' ||p_organization_id);
+          fnd_file.put_line(fnd_file.log,'p_inventory_item_id ................ :' ||p_inventory_item_id);
+          fnd_file.put_line(fnd_file.log,'p_minor ............................ :' ||p_minor);
+          fnd_file.put_line(fnd_file.log,'');
+          RETURN l_product_line;
+      END;
+      RETURN l_product_line;
+      --
+    ELSIF p_source = 'ORGANIZACAO' THEN
+      BEGIN
+        SELECT pl_org.pl
+        INTO   l_product_line
+        FROM   mtl_parameters mp
+              ,(SELECT '4661' pl, 'GVT' organization_code
+                FROM   dual
+                UNION
+                SELECT '0000' pl, 'SUM' organization_code
+                FROM   dual) pl_org
+        WHERE  mp.organization_code = pl_org.organization_code
+        AND    mp.organization_id = p_organization_id;
+
+      EXCEPTION
+        WHEN OTHERS THEN
+          l_product_line := NULL;
+          fnd_file.put_line(fnd_file.log, '');
+          fnd_file.put_line(fnd_file.log,'Erro ao recuperar Product Line para Organizacao - ' ||SQLERRM);
+          fnd_file.put_line(fnd_file.log,'p_source ........................... :' ||p_source);
+          fnd_file.put_line(fnd_file.log,'p_operation_id ..................... :' ||p_operation_id);
+          fnd_file.put_line(fnd_file.log,'p_organization_id .................. :' ||p_organization_id);
+          fnd_file.put_line(fnd_file.log,'p_inventory_item_id ................ :' ||p_inventory_item_id);
+          fnd_file.put_line(fnd_file.log,'p_minor ............................ :' ||p_minor);
+          fnd_file.put_line(fnd_file.log,'');
+          RETURN l_product_line;
+      END;
+      RETURN l_product_line;
+    END IF;
+
+    RETURN l_product_line;
+    --
+  END f_get_prod_line;
+
+  --
+  FUNCTION f_get_gcc(p_invoice_type       IN VARCHAR2
+                    ,p_operation_id       IN NUMBER
+                    ,p_organization_id    IN NUMBER
+                    ,p_invoice_line_id    IN NUMBER
+                    ,p_inventory_item_id  IN NUMBER
+                    ,p_invoice_distrib_id IN NUMBER) RETURN VARCHAR2 IS
+    --
+    l_gcc         apps.gl_code_combinations_kfv.concatenated_segments%TYPE;
+    l_lookup_type VARCHAR2(30) := 'XXPPG_PS_FRETE_ACCOUNT_RULES';
+    l_rule        VARCHAR2(30) := f_get_gcc_rule(p_invoice_type,p_organization_id,l_lookup_type,'RULE');
+    l_tag         VARCHAR2(30) := f_get_gcc_rule(p_invoice_type,p_organization_id,l_lookup_type,'TAG');
+    l_minor       VARCHAR2(30);
+    l_prod_line   VARCHAR2(30);
+
+  BEGIN
+    IF l_rule IS NOT NULL THEN
+
+   fnd_file.put_line(fnd_file.log, '----------------------------------------------------------');
+   fnd_file.put_line(fnd_file.log, 'f_get_gcc');
+   fnd_file.put_line(fnd_file.log, '----------------------------------------------------------');
+   fnd_file.put_line(fnd_file.log, '');
+   fnd_file.put_line(fnd_file.log, 'l_rule ........................ : '||l_rule);
+   fnd_file.put_line(fnd_file.log, 'l_tag ......................... : '||l_tag);
+   fnd_file.put_line(fnd_file.log, 'p_invoice_type ................ : '||p_invoice_type);
+   fnd_file.put_line(fnd_file.log, 'p_operation_id ................ : '||p_operation_id);
+   fnd_file.put_line(fnd_file.log, 'p_organization_id ............. : '||p_organization_id);
+   fnd_file.put_line(fnd_file.log, 'p_invoice_line_id ............. : '||p_invoice_line_id);
+   fnd_file.put_line(fnd_file.log, 'p_inventory_item_id ........... : '||p_inventory_item_id);
+
+    IF l_rule IS NOT NULL THEN
+
+      IF l_rule = 'ITEM' THEN
+        fnd_file.put_line(fnd_file.log, '');
+        fnd_file.put_line(fnd_file.log, 'IF l_rule = ITEM THEN');
+        fnd_file.put_line(fnd_file.log, l_rule);
+        fnd_file.put_line(fnd_file.log, 'p_operation_id ................ : '||p_operation_id);
+        fnd_file.put_line(fnd_file.log, 'p_organization_id ............. : '||p_organization_id);
+        fnd_file.put_line(fnd_file.log, 'p_invoice_line_id ............. : '||p_invoice_line_id);
+        fnd_file.put_line(fnd_file.log, '');
+
+
+        BEGIN
+          SELECT gcck.concatenated_segments
+          INTO   l_gcc
+          FROM   apps.gl_code_combinations_kfv gcck
+                ,apps.cll_f189_invoice_dist    cfid
+          WHERE  cfid.code_combination_id = gcck.code_combination_id
+          AND    cfid.reference = 'ITEM'
+          AND    cfid.operation_id = p_operation_id
+          AND    cfid.organization_id = p_organization_id
+          AND    cfid.invoice_line_id = p_invoice_line_id
+          AND    cfid.invoice_distrib_id = p_invoice_distrib_id;
+        EXCEPTION
+          WHEN OTHERS THEN
+            l_gcc := NULL;
+            fnd_file.put_line(fnd_file.log,'' );
+            fnd_file.put_line(fnd_file.log,'Erro ao Recuperar Combinacao Contabil - '||l_rule||' - '||SQLERRM);
+            fnd_file.put_line(fnd_file.log,'l_rule ................. : ' || l_rule);
+            fnd_file.put_line(fnd_file.log,'p_invoice_type ......... : ' ||p_invoice_type);
+            fnd_file.put_line(fnd_file.log,'p_operation_id ......... : ' ||p_operation_id);
+            fnd_file.put_line(fnd_file.log,'p_organization_id ...... : ' ||p_organization_id);
+            fnd_file.put_line(fnd_file.log,'p_invoice_line_id ...... : ' ||p_invoice_line_id);
+            fnd_file.put_line(fnd_file.log,'p_inventory_item_id .... : ' ||p_inventory_item_id);
+            fnd_file.put_line(fnd_file.log, '');
+            RETURN l_gcc;
+            --
+        END;
+        --
+        fnd_file.put_line(fnd_file.log, 'l_gcc ......................... : '||l_gcc);
+        fnd_file.put_line(fnd_file.log, '');
+        RETURN l_gcc;
+      ELSIF l_rule = 'NF_COMPLEMENTAR' THEN
+        ---
+        fnd_file.put_line(fnd_file.log, '');
+        fnd_file.put_line(fnd_file.log, 'IF l_rule = NF_COMPLEMENTAR THEN');
+        fnd_file.put_line(fnd_file.log, l_rule);
+        fnd_file.put_line(fnd_file.log, 'p_operation_id ................ : '||p_operation_id);
+        fnd_file.put_line(fnd_file.log, 'p_organization_id ............. : '||p_organization_id);
+        fnd_file.put_line(fnd_file.log, 'p_invoice_line_id ............. : '||p_invoice_line_id);
+        fnd_file.put_line(fnd_file.log, '');
+
+
+        BEGIN
+          SELECT gcck.concatenated_segments
+          INTO   l_gcc
+          FROM   apps.gl_code_combinations_kfv gcck
+                ,apps.cll_f189_invoice_lines   cfil
+          WHERE  cfil.db_code_combination_id = gcck.code_combination_id
+          AND    cfil.invoice_line_id = p_invoice_line_id;
+        EXCEPTION
+          WHEN OTHERS THEN
+            l_gcc := NULL;
+            fnd_file.put_line(fnd_file.log,'' );
+            fnd_file.put_line(fnd_file.log,'Erro ao Recuperar Combinacao Contabil - '||l_rule||' - '||SQLERRM);
+            fnd_file.put_line(fnd_file.log,'l_rule ................. : ' || l_rule);
+            fnd_file.put_line(fnd_file.log,'p_invoice_type ......... : ' ||p_invoice_type);
+            fnd_file.put_line(fnd_file.log,'p_operation_id ......... : ' ||p_operation_id);
+            fnd_file.put_line(fnd_file.log,'p_organization_id ...... : ' ||p_organization_id);
+            fnd_file.put_line(fnd_file.log,'p_invoice_line_id ...... : ' ||p_invoice_line_id);
+            fnd_file.put_line(fnd_file.log,'p_inventory_item_id .... : ' ||p_inventory_item_id);
+            fnd_file.put_line(fnd_file.log, '');
+            RETURN l_gcc;
+            --
+        END;
+        ---
+        fnd_file.put_line(fnd_file.log, 'l_gcc ......................... : '||l_gcc);
+        fnd_file.put_line(fnd_file.log, '');
+        RETURN l_gcc;
+        ---
+      ELSIF l_rule = 'MINOR' THEN
+        --
+        l_minor := f_get_minor(p_organization_id);
+        fnd_file.put_line(fnd_file.log, '');
+        fnd_file.put_line(fnd_file.log, 'IF l_rule = NF_COMPLEMENTAR THEN');
+        fnd_file.put_line(fnd_file.log, l_rule);
+        fnd_file.put_line(fnd_file.log, 'p_operation_id ................ : '||p_operation_id);
+        fnd_file.put_line(fnd_file.log, 'p_organization_id ............. : '||p_organization_id);
+        fnd_file.put_line(fnd_file.log, 'p_invoice_line_id ............. : '||p_invoice_line_id);
+        fnd_file.put_line(fnd_file.log, 'l_lookup_type ................. : '||l_lookup_type);
+        fnd_file.put_line(fnd_file.log, 'p_invoice_type ................ : '||p_invoice_type);
+        fnd_file.put_line(fnd_file.log, 'l_minor ....................... : '||l_minor);
+        fnd_file.put_line(fnd_file.log, '');
+
+        --
+        BEGIN
+          SELECT gcck.concatenated_segments
+          INTO   l_gcc
+          FROM   apps.gl_code_combinations_kfv gcck
+                ,fnd_lookup_values_vl          flvv
+          WHERE  flvv.lookup_type = l_lookup_type
+          AND    flvv.lookup_code = p_invoice_type
+          AND    flvv.enabled_flag = 'Y'
+          AND    nvl(flvv.end_date_active, SYSDATE) >= SYSDATE
+          AND    gcck.segment1 = flvv.attribute1
+          AND    gcck.segment2 = l_minor
+          AND    gcck.segment3 = flvv.attribute3
+          AND    gcck.segment4 = flvv.attribute4
+          AND    gcck.segment5 = flvv.attribute5
+          AND    gcck.segment6 = flvv.attribute6
+          AND    gcck.segment7 = flvv.attribute7;
+        EXCEPTION
+          WHEN OTHERS THEN
+            l_gcc := NULL;
+            fnd_file.put_line(fnd_file.log,'' );
+            fnd_file.put_line(fnd_file.log,'Erro ao Recuperar Combinacao Contabil - '||l_rule||' - '||SQLERRM);
+            fnd_file.put_line(fnd_file.log,'l_rule ................. : ' || l_rule);
+            fnd_file.put_line(fnd_file.log,'p_invoice_type ......... : ' ||p_invoice_type);
+            fnd_file.put_line(fnd_file.log,'p_operation_id ......... : ' ||p_operation_id);
+            fnd_file.put_line(fnd_file.log,'p_organization_id ...... : ' ||p_organization_id);
+            fnd_file.put_line(fnd_file.log,'p_invoice_line_id ...... : ' ||p_invoice_line_id);
+            fnd_file.put_line(fnd_file.log,'p_inventory_item_id .... : ' ||p_inventory_item_id);
+            fnd_file.put_line(fnd_file.log, '');
+            RETURN l_gcc;
+            --
+        END;
+      fnd_file.put_line(fnd_file.log, 'l_gcc ......................... : '||l_gcc);
+      fnd_file.put_line(fnd_file.log, '');
+      RETURN l_gcc;
+      ELSIF l_rule = 'MINOR_PL' THEN
+        --
+        l_minor     := f_get_minor(p_organization_id);
+        l_prod_line := f_get_prod_line(p_operation_id    => p_operation_id
+                                      ,p_organization_id => p_organization_id
+                                      ,p_minor           => l_minor
+                                      ,p_source          => l_tag);
+        fnd_file.put_line(fnd_file.log, '');
+        fnd_file.put_line(fnd_file.log, 'IF l_rule = MINOR_PL THEN');
+        fnd_file.put_line(fnd_file.log, l_rule);
+        fnd_file.put_line(fnd_file.log, 'p_operation_id ................ : '||p_operation_id);
+        fnd_file.put_line(fnd_file.log, 'p_organization_id ............. : '||p_organization_id);
+        fnd_file.put_line(fnd_file.log, 'p_invoice_line_id ............. : '||p_invoice_line_id);
+        fnd_file.put_line(fnd_file.log, 'l_lookup_type ................. : '||l_lookup_type);
+        fnd_file.put_line(fnd_file.log, 'p_invoice_type ................ : '||p_invoice_type);
+        fnd_file.put_line(fnd_file.log, 'l_minor ....................... : '||l_minor);
+        fnd_file.put_line(fnd_file.log, 'l_prod_line ................... : '||l_prod_line);
+        fnd_file.put_line(fnd_file.log, '');
+
+        BEGIN
+          SELECT gcck.concatenated_segments
+          INTO   l_gcc
+          FROM   apps.gl_code_combinations_kfv gcck
+                ,fnd_lookup_values_vl          flvv
+          WHERE  flvv.lookup_type = l_lookup_type
+          AND    flvv.lookup_code = p_invoice_type
+          AND    flvv.enabled_flag = 'Y'
+          AND    nvl(flvv.end_date_active, SYSDATE) >= SYSDATE
+          AND    gcck.segment1 = flvv.attribute1
+          AND    gcck.segment2 = l_minor
+          AND    gcck.segment3 = flvv.attribute3
+          AND    gcck.segment4 = flvv.attribute4
+          AND    gcck.segment5 = flvv.attribute5
+          AND    gcck.segment6 = l_prod_line
+          AND    gcck.segment7 = flvv.attribute7;
+          --
+
+        EXCEPTION
+          WHEN OTHERS THEN
+            l_gcc := NULL;
+            fnd_file.put_line(fnd_file.log,'' );
+            fnd_file.put_line(fnd_file.log,'Erro ao Recuperar Combinacao Contabil - '||l_rule||' - '||SQLERRM);
+            fnd_file.put_line(fnd_file.log,'l_rule ................. : ' || l_rule);
+            fnd_file.put_line(fnd_file.log,'p_invoice_type ......... : ' ||p_invoice_type);
+            fnd_file.put_line(fnd_file.log,'p_operation_id ......... : ' ||p_operation_id);
+            fnd_file.put_line(fnd_file.log,'p_organization_id ...... : ' ||p_organization_id);
+            fnd_file.put_line(fnd_file.log,'p_invoice_line_id ...... : ' ||p_invoice_line_id);
+            fnd_file.put_line(fnd_file.log,'p_inventory_item_id .... : ' ||p_inventory_item_id);
+            fnd_file.put_line(fnd_file.log, '');
+            RETURN l_gcc;
+            --
+        END;
+        fnd_file.put_line(fnd_file.log, 'l_gcc ......................... : '||l_gcc);
+        fnd_file.put_line(fnd_file.log, '');
+        RETURN l_gcc;
+        --
+      END IF;
+      --
+    ELSE
+      fnd_file.put_line(fnd_file.log, '');
+      fnd_file.put_line(fnd_file.log, 'Tipo de NF sem Regra Definida');
+      fnd_file.put_line(fnd_file.log,'l_rule ................. : ' || l_rule);
+      fnd_file.put_line(fnd_file.log,'p_invoice_type ......... : ' || p_invoice_type);
+      fnd_file.put_line(fnd_file.log,'p_operation_id ......... : ' || p_operation_id);
+      fnd_file.put_line(fnd_file.log,'p_organization_id ...... : ' ||p_organization_id);
+      fnd_file.put_line(fnd_file.log,'p_invoice_line_id ...... : ' ||p_invoice_line_id);
+      fnd_file.put_line(fnd_file.log,'p_inventory_item_id .... : ' ||p_inventory_item_id);
+      fnd_file.put_line(fnd_file.log, 'l_gcc ................. : ' ||l_gcc);
+      fnd_file.put_line(fnd_file.log, '');
+      fnd_file.put_line(fnd_file.log, '');
+      RETURN NULL;
+    END IF;
+
+    --
+    fnd_file.put_line(fnd_file.log, 'l_gcc ......................... : '||l_gcc);
+    fnd_file.put_line(fnd_file.log, '');
+
+    ELSE
+      fnd_file.put_line(fnd_file.log, 'Nao foi definido regra de recuperacao de Combinacao Contabil para o tipo de NF : '||p_invoice_type);
+      fnd_file.put_line(fnd_file.log, '');
+
+    END IF;
+
+    RETURN l_gcc;
+  END f_get_gcc; --
+  --
+  FUNCTION f_get_item_id(p_segment1 IN VARCHAR2) RETURN NUMBER IS
+    l_inventory_item_id mtl_system_items.inventory_item_id%TYPE;
+
+    BEGIN
+     BEGIN
+      SELECT inventory_item_id
+      INTO   l_inventory_item_id
+      FROM   mtl_system_items msi
+      WHERE  segment1 = p_segment1
+      AND    organization_id = oe_sys_parameters.value('MASTER_ORGANIZATION_ID',fnd_profile.value('ORG_ID'));
+    EXCEPTION
+      WHEN OTHERS THEN
+        l_inventory_item_id := NULL;
+        fnd_file.put_line(fnd_file.log,'Erro ao Recuperar INVENTORY_ITEM_ID para Item ' ||p_segment1);
+        fnd_file.put_line(fnd_file.log, SQLERRM);
+    END;
+    RETURN l_inventory_item_id;
+
+  END f_get_item_id;
+
+  --#04 SSD2411 END FUNCTIONS
+
+END xxppg_ri_ps_frete_pkg;
+/

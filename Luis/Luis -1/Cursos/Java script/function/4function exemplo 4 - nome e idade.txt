@@ -1,0 +1,16 @@
+function digitarMeuNome(nome){    
+    return('Meu nome é ' + nome);
+}
+
+
+function verificarIdade(idade){
+    
+    if (idade >= 18){
+        console.log(digitarMeuNome('Luis') + ' e você é maior de idade');
+    }
+    else{
+       console.log (digitarMeuNome('Luis') + ' e você é menor de idade');
+    }
+}
+
+verificarIdade(17);

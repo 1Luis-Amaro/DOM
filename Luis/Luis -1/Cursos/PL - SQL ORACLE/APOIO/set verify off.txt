@@ -1,0 +1,4 @@
+VERIFY OFF tem a finalidade de não mostrar os valores recebidos pelas as variáveis 
+que no exemplo em questão são MENOR_DT e MAIOR_DT.
+
+para não exibir o codigo do bloco após a execução do bloco

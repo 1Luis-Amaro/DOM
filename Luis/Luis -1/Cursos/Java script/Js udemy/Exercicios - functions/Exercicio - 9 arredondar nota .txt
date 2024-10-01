@@ -1,0 +1,32 @@
+
+const classificaAluno = function (nota){
+ let notaCorrigida = arredondar(nota)
+ if (notaCorrigida >= 40){
+ console.log(`aprovado com nota ${notaCorrigida}`)
+ }
+ else {
+ 	console.log(`reprovado com nota ${notaCorrigida}`)
+ }
+}
+
+function arredondar (nota){
+
+if(nota % 5 > 2){
+	return nota +(5- (nota % 5))
+}
+else{
+return nota
+}
+
+}
+
+
+//const classificaAluno = function (nota){: Define uma função chamada classificaAluno que aceita um parâmetro nota.let notaCorrigida = arredondar(nota): Chama a função arredondar passando a nota do aluno e armazena o resultado em notaCorrigida.if (notaCorrigida >= 40){: Verifica se a nota corrigida é maior ou igual a 40.console.log(aprovado com nota ${notaCorrigida}): Se a nota corrigida for maior ou igual a 40, imprime uma mensagem indicando que o aluno foi aprovado, juntamente com a nota corrigida.else { console.log(reprovado com nota ${notaCorrigida}) }: Se a nota corrigida for inferior a 40, imprime uma mensagem indicando que o aluno foi reprovado, juntamente com a nota corrigida.function arredondar (nota){: Define uma função chamada arredondar que aceita um parâmetro nota.if(nota % 5 > 2){ return nota +(5- (nota % 5)) }: Esta linha verifica se o resto da divisão da nota por 5 é maior que 2. Se for, a nota é arredondada para cima para o próximo múltiplo de 5.else{ return nota }: Se o resto da divisão por 5 não for maior que 2, a nota permanece a mesma.//
+
+
+classificaAluno(100)
+classificaAluno(30)
+classificaAluno(38)
+classificaAluno(88)
+classificaAluno(61)
+

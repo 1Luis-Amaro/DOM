@@ -1,0 +1,42 @@
+--
+-- tabela de imposto
+--
+select *
+from apps.ap_tax_codes_all
+where 1 = 1;
+
+--
+-- tabela de aliquota imposto
+--
+select *
+from apps.ap_awt_tax_rates_all;
+
+--
+-- query de imposto e aliquota
+--
+select *
+from apps.ap_tax_codes_all atca -- tabela de imposto
+   , apps.ap_awt_tax_rates_all aatra -- tabela de aliquota
+where 1 = 1
+and atca.name = aatra.tax_name;
+
+--
+-- tabela de grupo de imposto
+--
+select *
+from apps.ap_awt_groups;
+
+--
+-- tabela de imposto dos grupos
+--
+select *
+from apps.ap_awt_group_taxes_all;
+
+--
+-- query grupo e imposto
+--
+select *
+from apps.ap_awt_groups aag -- tabela de grupos
+   , apps.ap_awt_group_taxes_all aagta-- tabela de imposto dos grupos
+where 1 = 1
+and aag.group_id = aagta.group_id;

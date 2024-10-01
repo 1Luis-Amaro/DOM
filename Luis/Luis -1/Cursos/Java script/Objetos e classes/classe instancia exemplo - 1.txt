@@ -1,0 +1,20 @@
+class pessoa {
+ nome;
+ idade;
+
+descrever() {
+	console.log(`meu nome é ${this.nome} e minha idade é ${this.idade}`);
+}
+
+}
+
+const luis = new pessoa ();
+luis.nome = 'Luis Otávio';
+luis.idade = '19';
+
+const carlos = new pessoa ();
+carlos.nome = 'Carlos';
+carlos.idade = '23';
+
+luis.descrever();
+carlos.descrever();

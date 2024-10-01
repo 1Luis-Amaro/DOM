@@ -1,0 +1,2 @@
+O comando FETCH recupera linhas usando um cursor criado anteriormente. 
+O cursor tem uma posição associada, usada pelo comando FETCH .

@@ -1,0 +1,13 @@
+
+
+const receberValor = function (a){
+	
+  return a.toFixed(2).replace(".",",")
+}
+
+console.log(receberValor(0.30000000000000004))
+
+
+
+
+    

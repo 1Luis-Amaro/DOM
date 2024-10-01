@@ -1,0 +1,3 @@
+package body = todos os objetos e todos os codigos, comandos.
+
+packege especification  = só declaro o nome a parametro do objeto

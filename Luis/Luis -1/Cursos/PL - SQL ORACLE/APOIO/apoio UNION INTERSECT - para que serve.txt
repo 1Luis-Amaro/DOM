@@ -1,0 +1,6 @@
+Operação de conjuntos INTERSECT
+A operação INTERSECT funciona de forma um pouco parecida com a UNION, 
+a diferença é que logicamente ela elimina primeiro as linhas duplicadas nos dois selects. 
+Para ser mais claro vamos ao exemplo, como mostra a listagem 4:
+
+Então, seria como exibir somente os registros que as duas consultas têm em comum.

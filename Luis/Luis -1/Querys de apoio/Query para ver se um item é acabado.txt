@@ -1,0 +1,10 @@
+select mp.organization_code
+,msi.segment1
+,msi.creation_date
+,msi.item_type
+from apps.mtl_system_items msi, apps.mtl_parameters mp
+where msi.organization_id = mp.organization_id
+AND to_char(msi.creation_date, 'MON-RRRR') = to_char(SYSDATE,'MON-RRRR')
+AND inventory_item_status_code = 'Active'
+AND mp.organization_code IN ('SUM','GVT','PIN','AMB')
+AND msi.item_type LIKE '%ACA%';

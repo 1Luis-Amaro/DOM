@@ -1,0 +1,32 @@
+A seguir está uma consulta importante que fornece a junção entre OM, WSH, AR Tables
+SELECT ooh.order_number
+              ,ool.line_id
+              ,ool.ordered_quantity
+              ,ool.shipped_quantity
+              ,ool.invoiced_quantity
+              ,wdd.delivery_detail_id
+              ,wnd.delivery_id
+              ,rctl.interface_line_attribute1
+              ,rctl.interface_line_attribute3
+              ,rctl.interface_line_attribute6
+              ,rct.org_id
+              ,rct.creation_date
+              ,trx_number
+              ,rctl.quantity_ordered
+              ,rct.interface_header_context
+  DE oe_order_headers_all ooh
+             ,oe_order_lines_all ool
+             ,wsh_delivery_details wdd
+             ,wsh_new_deliveries wnd
+             , wsh_delivery_assignments wda
+             ,ra_customer_trx_all rct
+             ,ra_customer_trx_lines_all rctl
+ ONDE ooh.header_Id=ool.header_id
+      E wdd.source_header_id=ooh.header_id
+      E wdd.delivery_detail_Id=wda.delivery_detail_id
+      E wda.delivery_id=wnd.delivery_id
+      E rctl.interface_line_attribute1=to_char(ooh.order_number)
+      E rctl.interface_line_attribute6=to_char(ool.line_id)
+      E rctl.interface_line_attribute3=to_char(wnd.delivery_id)
+      E rctl.customer_trx_id=rct.customer_trx_id
+      AND rct.interface_header_context='ENTRADA DE PEDIDO'

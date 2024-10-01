@@ -1,0 +1,27 @@
+const reajuste = function (plano, salario){
+	switch	(plano){
+  case 'a':
+  return (salario * 0.10) + salario
+  
+  case 'b':
+  return (salario * 0.15) + salario
+  
+  case 'c': 
+  return (salario * 0.20) + salario
+  
+  default: 
+            return 'Plano invalido'
+ 
+ 
+  }
+} 
+
+console.log(reajuste('a',1000));
+console.log(reajuste('b',1000));
+console.log(reajuste('c',1000));
+
+
+
+
+
+

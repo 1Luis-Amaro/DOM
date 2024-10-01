@@ -1,0 +1,1 @@
+Quando utilizo o push adiciono um novo elemento no meu array

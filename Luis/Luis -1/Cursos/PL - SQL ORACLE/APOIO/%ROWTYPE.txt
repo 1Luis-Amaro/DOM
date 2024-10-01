@@ -1,0 +1,2 @@
+ROWTYPE para criar uma variável com a mesma estrutura da tabela. 
+Ao preenchermos os respectivos valores em seus campos, podemos fazer a inserção com o conteúdo da variável.

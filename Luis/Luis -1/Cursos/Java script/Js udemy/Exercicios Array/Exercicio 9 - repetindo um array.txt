@@ -1,0 +1,8 @@
+const Repetir = function (elemento, repeticao){
+    let resultado = []
+    for (let i = 0; i < repeticao;i++)
+    resultado.push(elemento)
+    return resultado
+}
+
+console.log(Repetir(2, 3))

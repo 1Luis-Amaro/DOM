@@ -1,0 +1,11 @@
+const Repetir = function (simboloMais){
+    let mais = '' 
+    
+    for (let i = 0; i < simboloMais;i++)
+    mais += '+'
+    
+    return mais
+    
+}
+
+console.log(Repetir(10))

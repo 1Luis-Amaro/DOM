@@ -1,0 +1,9 @@
+accounting_date between to_date('01/08/2022', 'DD/MM/'RRRR) and to_date('31/08/2022', 'DD/MM/'RRRR)
+
+ou
+
+AND nomeDaTabela LIKE '%AUG-2022%'
+
+ou
+
+ >= 01-jan-2022

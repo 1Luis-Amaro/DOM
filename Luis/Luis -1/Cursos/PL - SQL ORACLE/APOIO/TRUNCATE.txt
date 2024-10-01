@@ -1,0 +1,3 @@
+Use o comando TRUNCATE para remover todas as linhas de uma tabela. 
+Isso tem o mesmo efeito que o comando DELETE, mas é mais rápido que o comando DELETE para tabelas grandes. Além disso, 
+o comando TRUNCATE libera todo espaço em disco que é alocado para uma tabela, o que torna o espaço disponível para uso.

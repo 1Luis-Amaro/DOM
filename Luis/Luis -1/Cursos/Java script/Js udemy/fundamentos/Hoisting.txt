@@ -1,0 +1,6 @@
+//Hoisting seria o var jogar o meu var para cima, conseguindo rodar o 
+codigo mesmo o var sendo declarado depois do console.log, por isso use o let 
+
+console.log('a =', a)
+var a = 2
+console.log('a =',a)

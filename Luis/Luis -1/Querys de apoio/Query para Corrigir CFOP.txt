@@ -1,0 +1,22 @@
+--descobrir o customer_trx-id da NF
+SELECT *
+FROM   apps.ra_customer_trx_all
+WHERE  trx_number = '266071';
+
+--com o customer_Trx_id verificar qual é o CFOP que está na NF (global_attribute1 é o CFOP)
+SELECT global_attribute1, rctla.line_type, rctla.*
+FROM   apps.ra_customer_trx_lines_all rctla
+WHERE  customer_trx_id = 3259380;
+
+
+--fazer update para atualizar o CFOP na linha da NF
+UPDATE apps.ra_customer_trx_lines_all
+SET    global_attribute1 = '6101'
+WHERE  customer_trx_id = 3259380
+AND    line_type = 'LINE';
+
+--commit para confirmar a transacao no banco
+COMMIT;
+
+De <https://teams.microsoft.com/multi-window/?agent=electron&version=22073101005> 
+

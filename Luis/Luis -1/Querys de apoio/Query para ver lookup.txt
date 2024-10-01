@@ -1,0 +1,2 @@
+-- Achar lookups instaladas no banco
+SELECT * FROM apps.fnd_lookup_values

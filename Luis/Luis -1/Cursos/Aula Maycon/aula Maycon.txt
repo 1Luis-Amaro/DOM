@@ -1,0 +1,21 @@
+select RCTA.TRX_DATE, RCTA.TRX_NUMBER, RBSA.NAME
+from   apps.ra_customer_trx_all     RCTA 
+       ,apps.ra_batch_sources_all    RBSA
+WHERE TRX_NUMBER = '12424'
+AND  RCTA.BATCH_SOURCE_ID  =  rbsa.BATCH_SOURCE_ID
+AND  RBSA.NAME             = 'GVT_SERIE_17_PRODUTO_IMP'
+
+_________________________________________________________________
+
+--select PARA IDENTIFICAR BATCH SOURCE DO AR = origem
+select * ---BATCH_SOURCE_ID
+ from apps.ra_batch_sources_all
+ Where NAME = 'GVT_SERIE_17_PRODUTO_IMP';
+
+______________________________________________________________________________
+apps.ra_customer_trx_all       rcta --- tabela header nota fiscal de saida
+
+
+[08:40] dos Santos, Hudson
+
+97302710Hu..!

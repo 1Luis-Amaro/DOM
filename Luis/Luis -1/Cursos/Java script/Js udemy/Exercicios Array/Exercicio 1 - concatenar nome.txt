@@ -1,0 +1,6 @@
+const Cumprimentar = function (nome) {
+    const cumprimentar = 'olá,' 
+    return(cumprimentar.concat(nome,'!')) 
+    
+} 
+console.log(Cumprimentar(' luis'))

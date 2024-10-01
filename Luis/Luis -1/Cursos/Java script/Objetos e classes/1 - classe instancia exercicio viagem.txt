@@ -1,0 +1,37 @@
+/*1) Crie uma classe para representar carros. 
+Os carros possuem uma marca, uma cor e um gasto médio de combustível por Kilômetro rodado.
+Crie um método que dado a quantidade de quilómetros e o preço do combustível nos dê o valor 
+gasto em reais para realizar este percurso.*/
+
+class carros {
+    marca;
+    cor;
+    gastoMedio;
+    
+    constructor (marca,cor,gastoMedio){
+        this.marca = marca;
+        this.cor = cor;
+        this.gastoMedio = gastoMedio
+    }
+    
+    calcularGastoDePercurso(distanciaEmKm, precoCombustivel) {
+        return distanciaEmKm * this.gastoMedio * precoCombustivel;
+        //essa parte do calculo é o metodo que eu criei 
+    }
+    
+}
+    
+    const uno = new carros('fiat','prata', 1 / 12);// em 1 litro eu faço 12 km
+    const palio = new carros('gol','roxo', 1 / 10); //em 1 litro eu faço 10 km
+
+    console.log(uno.calcularGastoDePercurso(70,5));
+    console.log(palio.calcularGastoDePercurso(70,5)); 
+
+
+    
+    
+  
+
+    
+    
+    

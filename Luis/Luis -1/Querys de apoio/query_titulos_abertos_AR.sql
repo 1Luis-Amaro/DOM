@@ -1,0 +1,182 @@
+SELECT APS.PAYMENT_SCHEDULE_ID
+,APS.STAGED_DUNNING_LEVEL                       
+,APS.DUNNING_LEVEL_OVERRIDE_DATE    
+,APS.LAST_UPDATE_DATE               
+,APS.LAST_UPDATED_BY                
+,TRUNC(APS.CREATION_DATE) CREATION_DATE                   
+,APS.CREATED_BY                     
+,APS.LAST_UPDATE_LOGIN              
+,APS.DUE_DATE                       
+,APS.AMOUNT_DUE_ORIGINAL            
+,APS.AMOUNT_DUE_REMAINING           
+,APS.NUMBER_OF_DUE_DATES            
+,APS.STATUS                         
+,APS.INVOICE_CURRENCY_CODE          
+,APS.CLASS                          
+,APS.CUST_TRX_TYPE_ID               
+,APS.CUSTOMER_ID                    
+,APS.CUSTOMER_SITE_USE_ID           
+,APS.CUSTOMER_TRX_ID                
+,APS.CASH_RECEIPT_ID                
+,APS.ASSOCIATED_CASH_RECEIPT_ID     
+,APS.TERM_ID                        
+,APS.TERMS_SEQUENCE_NUMBER          
+,APS.GL_DATE_CLOSED                 
+,APS.ACTUAL_DATE_CLOSED             
+,APS.DISCOUNT_DATE                  
+,APS.AMOUNT_LINE_ITEMS_ORIGINAL     
+,APS.AMOUNT_LINE_ITEMS_REMAINING    
+,APS.AMOUNT_APPLIED                 
+,APS.AMOUNT_ADJUSTED                
+,APS.AMOUNT_IN_DISPUTE              
+,APS.AMOUNT_CREDITED                
+,APS.RECEIVABLES_CHARGES_CHARGED    
+,APS.RECEIVABLES_CHARGES_REMAINING  
+,APS.FREIGHT_ORIGINAL               
+,APS.FREIGHT_REMAINING              
+,APS.TAX_ORIGINAL                   
+,APS.TAX_REMAINING                  
+,APS.DISCOUNT_ORIGINAL              
+,APS.DISCOUNT_REMAINING             
+,APS.DISCOUNT_TAKEN_EARNED          
+,APS.DISCOUNT_TAKEN_UNEARNED        
+,APS.IN_COLLECTION                  
+,APS.CASH_APPLIED_ID_LAST           
+,APS.CASH_APPLIED_DATE_LAST         
+,APS.CASH_APPLIED_AMOUNT_LAST       
+,APS.CASH_APPLIED_STATUS_LAST       
+,APS.CASH_GL_DATE_LAST              
+,APS.CASH_RECEIPT_ID_LAST           
+,APS.CASH_RECEIPT_DATE_LAST         
+,APS.CASH_RECEIPT_AMOUNT_LAST       
+,APS.CASH_RECEIPT_STATUS_LAST       
+,APS.EXCHANGE_RATE_TYPE             
+,APS.EXCHANGE_DATE                  
+,APS.EXCHANGE_RATE                  
+,APS.ADJUSTMENT_ID_LAST             
+,APS.ADJUSTMENT_DATE_LAST           
+,APS.ADJUSTMENT_GL_DATE_LAST        
+,APS.ADJUSTMENT_AMOUNT_LAST         
+,APS.FOLLOW_UP_DATE_LAST            
+,APS.FOLLOW_UP_CODE_LAST            
+,APS.PROMISE_DATE_LAST              
+,APS.PROMISE_AMOUNT_LAST            
+,APS.COLLECTOR_LAST                 
+,APS.CALL_DATE_LAST                 
+,APS.TRX_NUMBER                     
+,APS.TRX_DATE                       
+,APS.ATTRIBUTE_CATEGORY             
+,APS.ATTRIBUTE1                     
+,APS.ATTRIBUTE2                     
+,APS.ATTRIBUTE3                     
+,APS.ATTRIBUTE4                     
+,APS.ATTRIBUTE5                     
+,APS.ATTRIBUTE6                     
+,APS.ATTRIBUTE7                     
+,APS.ATTRIBUTE8                     
+,APS.ATTRIBUTE9                     
+,APS.ATTRIBUTE10                    
+,APS.REVERSED_CASH_RECEIPT_ID       
+,APS.AMOUNT_ADJUSTED_PENDING        
+,APS.ATTRIBUTE11                    
+,APS.ATTRIBUTE12                    
+,APS.ATTRIBUTE13                    
+,APS.ATTRIBUTE14                    
+,APS.ATTRIBUTE15                    
+,APS.GL_DATE                        
+,APS.ACCTD_AMOUNT_DUE_REMAINING     
+,APS.PROGRAM_APPLICATION_ID         
+,APS.PROGRAM_ID                     
+,APS.PROGRAM_UPDATE_DATE            
+,APS.RECEIPT_CONFIRMED_FLAG         
+,APS.REQUEST_ID                     
+,APS.SELECTED_FOR_RECEIPT_BATCH_ID  
+,APS.LAST_CHARGE_DATE               
+,APS.SECOND_LAST_CHARGE_DATE        
+,APS.DISPUTE_DATE                   
+,APS.ORG_ID                         
+,APS.GLOBAL_ATTRIBUTE1              
+,APS.GLOBAL_ATTRIBUTE2              
+,APS.GLOBAL_ATTRIBUTE3              
+,APS.GLOBAL_ATTRIBUTE4              
+,APS.GLOBAL_ATTRIBUTE5              
+,APS.GLOBAL_ATTRIBUTE6              
+,APS.GLOBAL_ATTRIBUTE7              
+,APS.GLOBAL_ATTRIBUTE8              
+,APS.GLOBAL_ATTRIBUTE9              
+,APS.GLOBAL_ATTRIBUTE10             
+,APS.GLOBAL_ATTRIBUTE11             
+,APS.GLOBAL_ATTRIBUTE12             
+,APS.GLOBAL_ATTRIBUTE13             
+,APS.GLOBAL_ATTRIBUTE14             
+,APS.GLOBAL_ATTRIBUTE15             
+,APS.GLOBAL_ATTRIBUTE16             
+,APS.GLOBAL_ATTRIBUTE17             
+,APS.GLOBAL_ATTRIBUTE18             
+,APS.GLOBAL_ATTRIBUTE19             
+,APS.GLOBAL_ATTRIBUTE20             
+,APS.GLOBAL_ATTRIBUTE_CATEGORY      
+,APS.CONS_INV_ID                    
+,APS.CONS_INV_ID_REV                
+,APS.EXCLUDE_FROM_DUNNING_FLAG      
+,APS.MRC_CUSTOMER_TRX_ID            
+,APS.MRC_EXCHANGE_RATE_TYPE         
+,APS.MRC_EXCHANGE_DATE              
+,APS.MRC_EXCHANGE_RATE              
+,APS.MRC_ACCTD_AMOUNT_DUE_REMAINING 
+,APS.BR_AMOUNT_ASSIGNED             
+,APS.RESERVED_TYPE                  
+,APS.RESERVED_VALUE                 
+,APS.ACTIVE_CLAIM_FLAG              
+,APS.EXCLUDE_FROM_CONS_BILL_FLAG    
+,APS.PAYMENT_APPROVAL     
+,HCA.ACCOUNT_NUMBER        
+,HP.PARTY_NAME 
+
+,SLA_AR.Accounting_Combination
+,SLA_AR.CONTA
+,SLA_AR.CREDIT_AMOUNT
+,SLA_AR.DEBIT_AMOUNT
+
+FROM HZ_CUST_ACCOUNTS HCA
+   ,HZ_PARTY_SITES HPS
+   ,HZ_PARTIES HP
+   ,HZ_LOCATIONS HL
+   ,AR_PAYMENT_SCHEDULES_ALL APS
+   ,RA_CUSTOMER_TRX_ALL RCTA
+   ,RA_CUST_TRX_TYPES_ALL RCTTA
+   
+   ,(select  DISTINCT GCC.SEGMENT1||'.'||GCC.SEGMENT2||'.'||GCC.SEGMENT3||'.'||GCC.SEGMENT4||'.'||GCC.SEGMENT5||'.'||GCC.SEGMENT6||'.'||GCC.SEGMENT7
+||'.'||GCC.SEGMENT8||'.'||GCC.SEGMENT9 Accounting_Combination
+,( select ffv.flex_value||' - '||ffvt.description  conta   
+         from fnd_flex_values ffv ,fnd_flex_values_tl ffvt
+        where ffv.flex_value_id = ffvt.flex_value_id          
+          AND ffvt.LANGUAGE = 'PTB'
+          and ffv.flex_value = GCC.SEGMENT4
+          AND ROWNUM = 1) CONTA 
+,AALA.ACCOUNTED_CR CREDIT_AMOUNT
+,AALA.ACCOUNTED_DR DEBIT_AMOUNT
+,AIA.CUSTOMER_TRX_ID
+From 
+RA_CUST_TRX_LINE_GL_DIST_ALL  AIDA
+,xla_ae_headers             AAHA
+,xla_ae_lines               AALA
+,GL_CODE_COMBINATIONS       GCC
+,ra_customer_trx_all        AIA
+where 1 = 1
+and AAHA.AE_HEADER_ID               = AALA.AE_HEADER_ID
+and aaha.event_id = AIDA.event_id(+)
+and AIDA.CUST_TRX_LINE_GL_DIST_ID   = GCC.CODE_COMBINATION_ID
+and AIA.CUSTOMER_TRX_ID             = AIDA.CUSTOMER_TRX_ID) SLA_AR
+
+WHERE HP.PARTY_ID = HCA.PARTY_ID
+AND HPS.PARTY_ID = HP.PARTY_ID
+AND HPS.LOCATION_ID = HL.LOCATION_ID
+AND APS.CUSTOMER_SITE_USE_ID = RCTA.BILL_TO_SITE_USE_ID
+AND APS.CUSTOMER_TRX_ID = RCTA.CUSTOMER_TRX_ID
+AND APS.CUSTOMER_ID = RCTA.BILL_TO_CUSTOMER_ID
+AND HCA.CUST_ACCOUNT_ID = APS.CUSTOMER_ID
+AND RCTA.CUST_TRX_TYPE_ID = RCTTA.CUST_TRX_TYPE_ID
+--AND APS.STATUS = 'OP'
+
+AND SLA_AR.CUSTOMER_TRX_ID (+) = RCTA.CUSTOMER_TRX_ID

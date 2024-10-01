@@ -1,0 +1,9 @@
+//factory simples 
+function criarPessoas(){
+	return {
+  		nome: 'ana',
+      sobrenome: 'silva'
+  }
+}
+
+console.log(criarPessoas())
