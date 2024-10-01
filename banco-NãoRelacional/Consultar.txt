@@ -1,0 +1,18 @@
+db.estados.findOne() --me retorna um unico registro, mas posso passar filtros...
+
+db.estados.findOne({sigla: "RJ"})
+
+db.estados.find({sigla: "RJ"}).pretty()
+
+db.estados.find({$or: [{sigla: "RJ"}, {sigla: "AC"}]}).pretty() -- usando o ou, ele tras  o rj ou o ac, se tiver os dois ele tras os dois 
+
+db.estados.find({populacao: {$exists: true}}).pretty() -- tras os dados aonde existe populacao 
+
+db.estados.find().skip(1).limit(2) --skip vai pular o primeiro registro e depois vai trazer todos os dados, mas como estou limitando vai trazer so dois
+
+db.estados.count() --conta quantos registros tem
+
+db.estados.find({sigla: "SP"}, {nome: 1, sigla: 1, _id: 0})
+
+db.estados.find({sigla: "SP"}, {"cidades.nome": 1, _id: 0})-- dentro de cidades tras apenas o atribut nome 
+
